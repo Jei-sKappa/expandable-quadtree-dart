@@ -15,6 +15,7 @@ class QuadtreeApp extends StatelessWidget {
       theme: ThemeData(brightness: Brightness.light),
       darkTheme: ThemeData(brightness: Brightness.dark),
       themeMode: ThemeMode.system,
+      debugShowCheckedModeBanner: false,
       home: const QuadtreeHomePage(),
     );
   }

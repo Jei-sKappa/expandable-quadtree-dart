@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:example/controller.dart';
 import 'package:example/model/my_object.dart';
 import 'package:example/visualizer.dart';
+import 'package:fast_quadtree/fast_quadtree.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
@@ -18,14 +20,15 @@ class QuadtreeHomePage extends StatefulWidget {
 
 class _QuadtreeHomePageState extends State<QuadtreeHomePage> {
   late final QuadtreeController quadtreeController;
+  bool showQuatreeRepresentation = false;
 
   @override
   void initState() {
     quadtreeController = QuadtreeController(
-      quadrantWidth: 2500,
+      quadrantWidth: 5000,
       quadrantHeight: 2500,
       maxItems: 20,
-      maxDepth: 8,
+      maxDepth: 5,
     );
     super.initState();
   }
@@ -61,6 +64,7 @@ class _QuadtreeHomePageState extends State<QuadtreeHomePage> {
     }
 
     _createObjectsAndAddToQuadtree(
+      context: context,
       quadtreeController: quadtreeController,
       offset: Offset(x, y),
     );
@@ -71,51 +75,70 @@ class _QuadtreeHomePageState extends State<QuadtreeHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Quadtree Visualizer'),
+        actions: [
+          Switch.adaptive(
+            value: showQuatreeRepresentation,
+            onChanged: (value) {
+              setState(() {
+                showQuatreeRepresentation = value;
+              });
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
-          SizedBox(
-            height: 260,
-            child: _Controls(quadtreeController: quadtreeController),
-          ),
+          _Controls(quadtreeController: quadtreeController),
           const Divider(),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blue),
-                ),
-                child: LayoutBuilder(builder: (context, constraints) {
-                  return MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    onHover: (event) {
-                      print('Mouse at ${event.localPosition}');
-                    },
-                    child: GestureDetector(
-                      onTapDown: (details) =>
-                          _handleTapDown(details, constraints),
-                      child: QuadtreeVisualizer(
-                        quadtreeController: quadtreeController,
+          if (showQuatreeRepresentation)
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.blue),
+                  ),
+                  child: LayoutBuilder(builder: (context, constraints) {
+                    return MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: GestureDetector(
+                        onTapDown: (details) =>
+                            _handleTapDown(details, constraints),
+                        child: QuadtreeVisualizer(
+                          quadtreeController: quadtreeController,
+                        ),
                       ),
-                    ),
-                  );
-                }),
+                    );
+                  }),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
   }
 }
 
-class _Controls extends StatelessWidget {
+class _Controls extends StatefulWidget {
   const _Controls({
     required this.quadtreeController,
   });
 
   final QuadtreeController quadtreeController;
+
+  @override
+  State<_Controls> createState() => _ControlsState();
+}
+
+class _ControlsState extends State<_Controls> {
+  Duration? timeToRetrieveObjects;
+  bool isLoadingRetrieveObjects = false;
+  Duration? timeToGetAllObjects;
+  bool isLoadingGetAllObjects = false;
+  Duration? timeToGetAllObjectsWithoutDuplicates;
+  bool isLoadingGetAllObjectsWithoutDuplicates = false;
+  Duration? timeToGetAllQuadrants;
+  bool isLoadingGetAllQuadrants = false;
 
   @override
   Widget build(BuildContext context) {
@@ -124,43 +147,52 @@ class _Controls extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            'Quadrant Size: ${quadtreeController.quadrantWidth} x ${quadtreeController.quadrantHeight}',
+            'Quadrant Size: ${widget.quadtreeController.quadrantWidth} x ${widget.quadtreeController.quadrantHeight}',
           ),
           ListenableBuilder(
-              listenable: quadtreeController,
+            listenable: widget.quadtreeController,
+            builder: (context, _) {
+              return Text(
+                'Number of Objects: ${widget.quadtreeController.quadtree.length}',
+              );
+            },
+          ),
+          ListenableBuilder(
+              listenable: widget.quadtreeController,
               builder: (context, _) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Max Items per Node: ${quadtreeController.maxItems}'),
+                    Text(
+                        'Max Items per Node: ${widget.quadtreeController.maxItems}'),
                     Slider(
                       min: 1,
                       max: 100,
                       divisions: 100,
-                      value: quadtreeController.maxItems.toDouble(),
+                      value: widget.quadtreeController.maxItems.toDouble(),
                       onChanged: (value) {
-                        quadtreeController.updateMaxItems(value.toInt());
+                        widget.quadtreeController.updateMaxItems(value.toInt());
                       },
                     ),
                   ],
                 );
               }),
           ListenableBuilder(
-              listenable: quadtreeController,
+              listenable: widget.quadtreeController,
               builder: (context, _) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                        'Max Depth: ${quadtreeController.maxDepth ?? "Unlimited"}'),
+                        'Max Depth: ${widget.quadtreeController.maxDepth ?? "Unlimited"}'),
                     StatefulBuilder(
                       builder: (context, setState) {
                         final bool isUnlimited =
-                            quadtreeController.maxDepth == null;
+                            widget.quadtreeController.maxDepth == null;
                         if (isUnlimited) {
                           return ElevatedButton(
                             onPressed: () {
-                              quadtreeController.updateMaxDepth(10);
+                              widget.quadtreeController.updateMaxDepth(10);
                             },
                             child: const Text('Set Max Depth'),
                           );
@@ -172,16 +204,17 @@ class _Controls extends StatelessWidget {
                                 min: 1,
                                 max: 30,
                                 divisions: 30,
-                                value: quadtreeController.maxDepth!.toDouble(),
+                                value: widget.quadtreeController.maxDepth!
+                                    .toDouble(),
                                 onChanged: (value) {
-                                  quadtreeController
+                                  widget.quadtreeController
                                       .updateMaxDepth(value.toInt());
                                 },
                               ),
                             ),
                             TextButton(
                               onPressed: () {
-                                quadtreeController.updateMaxDepth(null);
+                                widget.quadtreeController.updateMaxDepth(null);
                               },
                               child: const Text('Make Unlimited'),
                             ),
@@ -201,20 +234,22 @@ class _Controls extends StatelessWidget {
             children: [
               ElevatedButton(
                 onPressed: () => _createObjectsAndAddToQuadtree(
+                  context: context,
                   myObject: MyObject(
                     id: _uuid.v4(),
-                    x: quadtreeController.quadrantWidth / 2,
-                    y: quadtreeController.quadrantHeight / 2,
-                    width: quadtreeController.quadrantWidth * 0.1,
-                    height: quadtreeController.quadrantHeight * 0.1,
+                    x: widget.quadtreeController.quadrantWidth / 2,
+                    y: widget.quadtreeController.quadrantHeight / 2,
+                    width: widget.quadtreeController.quadrantWidth * 0.1,
+                    height: widget.quadtreeController.quadrantHeight * 0.1,
                   ),
-                  quadtreeController: quadtreeController,
+                  quadtreeController: widget.quadtreeController,
                 ),
                 child: const Text('Add object at the same position'),
               ),
               ElevatedButton(
                 onPressed: () => _createObjectsAndAddToQuadtree(
-                  quadtreeController: quadtreeController,
+                  context: context,
+                  quadtreeController: widget.quadtreeController,
                 ),
                 child: const Text('Add one Object'),
               ),
@@ -234,8 +269,9 @@ class _Controls extends StatelessWidget {
                     try {
                       final count = int.parse(value);
                       _createObjectsAndAddToQuadtree(
+                        context: context,
                         count: count,
-                        quadtreeController: quadtreeController,
+                        quadtreeController: widget.quadtreeController,
                       );
                     } on FormatException catch (_) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -252,9 +288,142 @@ class _Controls extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {
                   // Clear the quadtree
-                  quadtreeController.clearQuadtree();
+                  widget.quadtreeController.clearQuadtree();
                 },
                 child: const Text('Clear Quadtree'),
+              ),
+            ],
+          ),
+          const Divider(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      setState(() {
+                        isLoadingGetAllObjectsWithoutDuplicates = true;
+                        timeToGetAllObjectsWithoutDuplicates = null;
+                      });
+                      final start = DateTime.now();
+                      await compute(
+                        _getAllObjectsWithoutDuplicates,
+                        widget.quadtreeController.quadtree,
+                      );
+                      final end = DateTime.now();
+                      setState(() {
+                        isLoadingGetAllObjectsWithoutDuplicates = false;
+                        timeToGetAllObjectsWithoutDuplicates =
+                            end.difference(start);
+                      });
+                    },
+                    child: const Text('Get all objects without duplicates'),
+                  ),
+                  if (isLoadingGetAllObjectsWithoutDuplicates)
+                    const CircularProgressIndicator.adaptive(),
+                  if (timeToGetAllObjectsWithoutDuplicates != null)
+                    Text(
+                        'Time taken: ${timeToGetAllObjectsWithoutDuplicates!.inMilliseconds}ms'),
+                ],
+              ),
+              Column(
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      setState(() {
+                        isLoadingGetAllObjects = true;
+                        timeToGetAllObjects = null;
+                      });
+                      final start = DateTime.now();
+                      await compute(
+                        _getAllObjects,
+                        widget.quadtreeController.quadtree,
+                      );
+                      final end = DateTime.now();
+                      setState(() {
+                        isLoadingGetAllObjects = false;
+                        timeToGetAllObjects = end.difference(start);
+                      });
+                    },
+                    child: const Text('Get all objects'),
+                  ),
+                  if (isLoadingGetAllObjects)
+                    const CircularProgressIndicator.adaptive(),
+                  if (timeToGetAllObjects != null)
+                    Text(
+                        'Time taken: ${timeToGetAllObjects!.inMilliseconds}ms'),
+                ],
+              ),
+              Column(
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      setState(() {
+                        isLoadingGetAllQuadrants = true;
+                        timeToGetAllQuadrants = null;
+                      });
+                      final start = DateTime.now();
+                      await compute(
+                        _getAllQuadrants,
+                        widget.quadtreeController.quadtree,
+                      );
+                      final end = DateTime.now();
+                      setState(() {
+                        isLoadingGetAllQuadrants = false;
+                        timeToGetAllQuadrants = end.difference(start);
+                      });
+                    },
+                    child: const Text('Get all quadrants'),
+                  ),
+                  if (isLoadingGetAllQuadrants)
+                    const CircularProgressIndicator.adaptive(),
+                  if (timeToGetAllQuadrants != null)
+                    Text(
+                        'Time taken: ${timeToGetAllQuadrants!.inMilliseconds}ms'),
+                ],
+              ),
+              // Retrieve Objects
+              Column(
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      setState(() {
+                        isLoadingRetrieveObjects = true;
+                        timeToRetrieveObjects = null;
+                      });
+                      final width =
+                          widget.quadtreeController.quadrantWidth * 0.01;
+                      final height =
+                          widget.quadtreeController.quadrantHeight * 0.01;
+                      final x =
+                          widget.quadtreeController.quadrantWidth / 2 - width;
+                      final y =
+                          widget.quadtreeController.quadrantHeight / 2 - height;
+                      final rect = Rect.fromLTWH(x, y, width, height);
+
+                      final start = DateTime.now();
+                      await compute(
+                        _retrieveObjects,
+                        _RetrieveObjectsParams(
+                          widget.quadtreeController.quadtree,
+                          rect,
+                        ),
+                      );
+                      final end = DateTime.now();
+                      setState(() {
+                        isLoadingRetrieveObjects = false;
+                        timeToRetrieveObjects = end.difference(start);
+                      });
+                    },
+                    child: const Text('Retrieve Objects'),
+                  ),
+                  if (isLoadingRetrieveObjects)
+                    const CircularProgressIndicator.adaptive(),
+                  if (timeToRetrieveObjects != null)
+                    Text(
+                        'Time taken: ${timeToRetrieveObjects!.inMilliseconds}ms'),
+                ],
               ),
             ],
           ),
@@ -265,6 +434,7 @@ class _Controls extends StatelessWidget {
 }
 
 void _createObjectsAndAddToQuadtree({
+  required BuildContext context,
   MyObject? myObject,
   int count = 1,
   required QuadtreeController quadtreeController,
@@ -292,8 +462,43 @@ void _createObjectsAndAddToQuadtree({
           width: width,
           height: height,
         );
-    print('  Adding object $i: $obj');
+    if (i % 1000 == 0) print('  Adding object $i: $obj');
     quadtreeController.insertObject(obj);
   }
-  print('Added all objects');
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text("Added $count objects"),
+      duration: const Duration(seconds: 2),
+    ),
+  );
+}
+
+List<MyObject> _getAllObjectsWithoutDuplicates(Quadtree<MyObject> quadtree) {
+  return quadtree.getAllItems(removeDuplicates: false);
+}
+
+List<MyObject> _getAllObjects(Quadtree<MyObject> quadtree) {
+  return quadtree.getAllItems();
+}
+
+List<Quadrant> _getAllQuadrants(Quadtree<MyObject> quadtree) {
+  return quadtree.getAllQuadrants();
+}
+
+class _RetrieveObjectsParams {
+  final Quadtree<MyObject> quadtree;
+  final Rect bounds;
+
+  _RetrieveObjectsParams(this.quadtree, this.bounds);
+}
+
+List<MyObject> _retrieveObjects(_RetrieveObjectsParams params) {
+  return params.quadtree.retrieve(
+    Quadrant(
+      x: params.bounds.left,
+      y: params.bounds.top,
+      width: params.bounds.width,
+      height: params.bounds.height,
+    ),
+  );
 }
