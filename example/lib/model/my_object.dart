@@ -41,7 +41,7 @@ class MyObject with EquatableMixin {
         data = List<int>.generate(10, (index) => index);
 
   @override
-  List<Object?> get props => [id, x, y, width, height, data];
+  List<Object?> get props => [id, x, y, width, height, color, data];
 
   @override
   bool get stringify => true;
