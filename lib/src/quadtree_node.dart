@@ -144,8 +144,7 @@ class QuadtreeNode<T> with EquatableMixin {
       }
     }
 
-    items.removeDuplicates();
-    return items;
+    return items.removeDuplicates();
   }
 
   /// Retrieves all quadrants from the given quadtree, including nested
@@ -198,7 +197,8 @@ class QuadtreeNode<T> with EquatableMixin {
   }) {
     final items = _getAllItemFromTree(quadtreeNode);
 
-    if (removeDuplicates) items.removeDuplicates();
+    if (removeDuplicates) return items.removeDuplicates();
+
     return items;
   }
 
@@ -207,7 +207,7 @@ class QuadtreeNode<T> with EquatableMixin {
 
     for (final node in quadtreeNode.nodes.values) {
       items.addAll(
-        getAllItemFromTree(node),
+        _getAllItemFromTree(node),
       );
     }
 
