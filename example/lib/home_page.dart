@@ -24,7 +24,7 @@ class _QuadtreeHomePageState extends State<QuadtreeHomePage> {
 
   @override
   void initState() {
-    quadtreeController = CachedQuadtreeController(
+    quadtreeController = QuadtreeController(
       quadrantWidth: 5000,
       quadrantHeight: 2500,
       maxItems: 20,
@@ -446,11 +446,11 @@ void _createObjectsAndAddToQuadtree({
 }
 
 List<MyObject> _getAllObjectsWithoutDuplicates(Quadtree<MyObject> quadtree) {
-  return quadtree.getAllItems(removeDuplicates: false);
+  return quadtree.getAllItems(removeDuplicates: true);
 }
 
 List<MyObject> _getAllObjects(Quadtree<MyObject> quadtree) {
-  return quadtree.getAllItems();
+  return quadtree.getAllItems(removeDuplicates: false);
 }
 
 List<Quadrant> _getAllQuadrants(Quadtree<MyObject> quadtree) {
