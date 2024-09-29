@@ -1,0 +1,1 @@
+enum QuadrantLocation { ne, nw, sw, se }
