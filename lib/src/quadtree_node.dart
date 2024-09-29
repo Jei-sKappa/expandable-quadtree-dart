@@ -26,7 +26,7 @@ class QuadtreeNode<T> with EquatableMixin {
 
   bool get isFull => items.length >= tree.maxItems;
 
-  bool get canSplit => tree.maxDepth == null || depth <= tree.maxDepth!;
+  bool get canSplit => depth <= tree.maxDepth;
 
   @override
   List<Object?> get props => [quadrant, items, nodes, depth, tree];

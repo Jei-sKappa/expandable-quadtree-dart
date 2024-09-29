@@ -9,13 +9,13 @@ class QuadtreeController with ChangeNotifier {
   final double quadrantWidth;
   final double quadrantHeight;
   int maxItems;
-  int? maxDepth;
+  int maxDepth;
 
   QuadtreeController({
     required this.quadrantWidth,
     required this.quadrantHeight,
     this.maxItems = 4,
-    this.maxDepth,
+    this.maxDepth = 4,
   }) {
     _initQuadtree();
   }
@@ -35,7 +35,7 @@ class QuadtreeController with ChangeNotifier {
     _initQuadtree();
   }
 
-  void updateMaxDepth(int? value) {
+  void updateMaxDepth(int value) {
     maxDepth = value;
     _initQuadtree();
   }

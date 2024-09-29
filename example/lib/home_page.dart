@@ -183,43 +183,14 @@ class _ControlsState extends State<_Controls> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                        'Max Depth: ${widget.quadtreeController.maxDepth ?? "Unlimited"}'),
-                    StatefulBuilder(
-                      builder: (context, setState) {
-                        final bool isUnlimited =
-                            widget.quadtreeController.maxDepth == null;
-                        if (isUnlimited) {
-                          return ElevatedButton(
-                            onPressed: () {
-                              widget.quadtreeController.updateMaxDepth(10);
-                            },
-                            child: const Text('Set Max Depth'),
-                          );
-                        }
-                        return Row(
-                          children: [
-                            Expanded(
-                              child: Slider(
-                                min: 1,
-                                max: 30,
-                                divisions: 30,
-                                value: widget.quadtreeController.maxDepth!
-                                    .toDouble(),
-                                onChanged: (value) {
-                                  widget.quadtreeController
-                                      .updateMaxDepth(value.toInt());
-                                },
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                widget.quadtreeController.updateMaxDepth(null);
-                              },
-                              child: const Text('Make Unlimited'),
-                            ),
-                          ],
-                        );
+                    Text('Max Depth: ${widget.quadtreeController.maxDepth}'),
+                    Slider(
+                      min: 1,
+                      max: 30,
+                      divisions: 30,
+                      value: widget.quadtreeController.maxDepth.toDouble(),
+                      onChanged: (value) {
+                        widget.quadtreeController.updateMaxDepth(value.toInt());
                       },
                     ),
                   ],

@@ -12,8 +12,8 @@ part 'quadtree_node.dart';
 class Quadtree<T> with EquatableMixin {
   Quadtree(
     Quadrant quadrant, {
-    this.maxItems = 2,
-    this.maxDepth,
+    this.maxItems = 5,
+    this.maxDepth = 4,
     required this.getBounds,
   }) {
     root = QuadtreeNode<T>(
@@ -24,7 +24,7 @@ class Quadtree<T> with EquatableMixin {
 
   final int maxItems;
 
-  final int? maxDepth;
+  final int maxDepth;
 
   final Rect Function(T) getBounds;
 
