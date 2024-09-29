@@ -14,32 +14,37 @@ class QuadtreeVisualizer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-        listenable: quadtreeController,
-        builder: (context, _) {
-          return RepaintBoundary(
-            child: CustomPaint(
-              painter: QuadtreePainter(
-                quadtreeController: quadtreeController,
-              ),
-              child: Container(),
+      listenable: quadtreeController,
+      builder: (context, _) {
+        return RepaintBoundary(
+          child: CustomPaint(
+            painter: QuadtreePainter(
+              quadtreeController: quadtreeController,
+              darkMode: Theme.of(context).brightness == Brightness.dark,
             ),
-          );
-        });
+            child: Container(),
+          ),
+        );
+      },
+    );
   }
 }
 
 class QuadtreePainter extends CustomPainter {
   final QuadtreeController quadtreeController;
-  final Paint _linePaint = Paint()
-    ..color = Colors.black
+  final bool darkMode;
+
+  QuadtreePainter({
+    required this.quadtreeController,
+    this.darkMode = false,
+  });
+
+  late final Paint _linePaint = Paint()
+    ..color = darkMode ? Colors.white : Colors.black
     ..strokeWidth = 1.0
     ..style = PaintingStyle.stroke;
 
   final Paint _myObjectPaint = Paint()..style = PaintingStyle.fill;
-
-  QuadtreePainter({
-    required this.quadtreeController,
-  });
 
   @override
   void paint(Canvas canvas, Size size) {

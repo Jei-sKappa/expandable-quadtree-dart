@@ -78,31 +78,29 @@ class _QuadtreeHomePageState extends State<QuadtreeHomePage> {
             height: 260,
             child: _Controls(quadtreeController: quadtreeController),
           ),
+          const Divider(),
           Expanded(
-            child: Container(
-              color: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.blue),
-                  ),
-                  child: LayoutBuilder(builder: (context, constraints) {
-                    return MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      onHover: (event) {
-                        print('Mouse at ${event.localPosition}');
-                      },
-                      child: GestureDetector(
-                        onTapDown: (details) =>
-                            _handleTapDown(details, constraints),
-                        child: QuadtreeVisualizer(
-                          quadtreeController: quadtreeController,
-                        ),
-                      ),
-                    );
-                  }),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blue),
                 ),
+                child: LayoutBuilder(builder: (context, constraints) {
+                  return MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    onHover: (event) {
+                      print('Mouse at ${event.localPosition}');
+                    },
+                    child: GestureDetector(
+                      onTapDown: (details) =>
+                          _handleTapDown(details, constraints),
+                      child: QuadtreeVisualizer(
+                        quadtreeController: quadtreeController,
+                      ),
+                    ),
+                  );
+                }),
               ),
             ),
           ),
