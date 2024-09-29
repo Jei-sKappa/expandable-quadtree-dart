@@ -19,12 +19,12 @@ class QuadtreeHomePage extends StatefulWidget {
 }
 
 class _QuadtreeHomePageState extends State<QuadtreeHomePage> {
-  late final QuadtreeController quadtreeController;
+  late final QuadtreeControllerBase quadtreeController;
   bool showQuatreeRepresentation = false;
 
   @override
   void initState() {
-    quadtreeController = QuadtreeController(
+    quadtreeController = CachedQuadtreeController(
       quadrantWidth: 5000,
       quadrantHeight: 2500,
       maxItems: 20,
@@ -124,7 +124,7 @@ class _Controls extends StatefulWidget {
     required this.quadtreeController,
   });
 
-  final QuadtreeController quadtreeController;
+  final QuadtreeControllerBase quadtreeController;
 
   @override
   State<_Controls> createState() => _ControlsState();
@@ -149,14 +149,15 @@ class _ControlsState extends State<_Controls> {
           Text(
             'Quadrant Size: ${widget.quadtreeController.quadrantWidth} x ${widget.quadtreeController.quadrantHeight}',
           ),
-          ListenableBuilder(
-            listenable: widget.quadtreeController,
-            builder: (context, _) {
-              return Text(
-                'Number of Objects: ${widget.quadtreeController.quadtree.length}',
-              );
-            },
-          ),
+          if (widget.quadtreeController is CachedQuadtreeController)
+            ListenableBuilder(
+              listenable: widget.quadtreeController,
+              builder: (context, _) {
+                return Text(
+                  'Number of Objects: ${widget.quadtreeController.quadtree.getAllItems().length}',
+                );
+              },
+            ),
           ListenableBuilder(
               listenable: widget.quadtreeController,
               builder: (context, _) {
@@ -408,7 +409,7 @@ void _createObjectsAndAddToQuadtree({
   required BuildContext context,
   MyObject? myObject,
   int count = 1,
-  required QuadtreeController quadtreeController,
+  required QuadtreeControllerBase quadtreeController,
   Offset? offset,
 }) {
   print('Adding $count objects');

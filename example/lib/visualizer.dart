@@ -4,7 +4,7 @@ import 'package:fast_quadtree/fast_quadtree.dart';
 import 'package:flutter/material.dart';
 
 class QuadtreeVisualizer extends StatelessWidget {
-  final QuadtreeController quadtreeController;
+  final QuadtreeControllerBase quadtreeController;
 
   const QuadtreeVisualizer({
     super.key,
@@ -31,7 +31,7 @@ class QuadtreeVisualizer extends StatelessWidget {
 }
 
 class QuadtreePainter extends CustomPainter {
-  final QuadtreeController quadtreeController;
+  final QuadtreeControllerBase quadtreeController;
   final bool darkMode;
 
   QuadtreePainter({

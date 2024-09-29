@@ -39,10 +39,6 @@ class Quadtree<T> with EquatableMixin {
 
   int get lastUpdated => _lastUpdated;
 
-  int _lenght = 0;
-
-  int get length => _lenght;
-
   void _updateLastUpdated() {
     _lastUpdated = DateTime.now().millisecondsSinceEpoch;
   }
@@ -53,7 +49,7 @@ class Quadtree<T> with EquatableMixin {
   List<Object?> get props => [maxItems, maxDepth, getBounds, root, _depth];
 
   @override
-  bool get stringify => true;
+  bool? get stringify => true;
 
   /// Insert the item into the node. If the node exceeds the capacity,
   /// it will split and add all items to their corresponding subnodes.
@@ -61,7 +57,6 @@ class Quadtree<T> with EquatableMixin {
   /// Takes quadrant to be inserted.
   void insert(T item) {
     root.insert(item);
-    _lenght++;
     _updateLastUpdated();
   }
 
@@ -77,7 +72,6 @@ class Quadtree<T> with EquatableMixin {
   ///
   /// If the [Quadtree] is very deep, consider using [localizedRemove]
   void remove(T item) {
-    _lenght--;
     root.remove(item);
     _updateLastUpdated();
   }
@@ -97,7 +91,6 @@ class Quadtree<T> with EquatableMixin {
   ///
   /// If [item.getQuadrantsLocations] is expensive, consider using [remove]
   void localizedRemove(T item) {
-    _lenght--;
     root.localizedRemove(item);
     _updateLastUpdated();
   }
@@ -169,7 +162,6 @@ class Quadtree<T> with EquatableMixin {
 
   /// Clear the [Quadtree]
   void clear() {
-    _lenght = 0;
     root.clear();
     _updateLastUpdated();
   }
