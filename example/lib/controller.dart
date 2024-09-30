@@ -6,6 +6,8 @@ Rect _getBoundFromMyObject(MyObject item) => item.bounds;
 
 abstract class QuadtreeControllerBase with ChangeNotifier {
   QuadtreeControllerBase({
+    this.quadrantX = 0,
+    this.quadrantY = 0,
     required this.quadrantWidth,
     required this.quadrantHeight,
     this.maxItems = 4,
@@ -14,6 +16,8 @@ abstract class QuadtreeControllerBase with ChangeNotifier {
     _initQuadtree();
   }
 
+  final double quadrantX;
+  final double quadrantY;
   final double quadrantWidth;
   final double quadrantHeight;
   int maxItems;
@@ -51,6 +55,8 @@ abstract class QuadtreeControllerBase with ChangeNotifier {
 
 class QuadtreeController extends QuadtreeControllerBase {
   QuadtreeController({
+    super.quadrantX,
+    super.quadrantY,
     required super.quadrantWidth,
     required super.quadrantHeight,
     super.maxItems,
@@ -65,7 +71,12 @@ class QuadtreeController extends QuadtreeControllerBase {
   @override
   void _initQuadtree() {
     _quadtree = Quadtree<MyObject>(
-      Quadrant.fromOrigin(width: quadrantWidth, height: quadrantHeight),
+      Quadrant(
+        x: quadrantX,
+        y: quadrantY,
+        width: quadrantWidth,
+        height: quadrantHeight,
+      ),
       maxItems: maxItems,
       maxDepth: maxDepth,
       getBounds: _getBoundFromMyObject,
@@ -76,6 +87,8 @@ class QuadtreeController extends QuadtreeControllerBase {
 
 class CachedQuadtreeController extends QuadtreeControllerBase {
   CachedQuadtreeController({
+    super.quadrantX,
+    super.quadrantY,
     required super.quadrantWidth,
     required super.quadrantHeight,
     super.maxItems,
@@ -90,7 +103,12 @@ class CachedQuadtreeController extends QuadtreeControllerBase {
   @override
   void _initQuadtree() {
     _quadtree = CachedQuadtree<MyObject>(
-      Quadrant.fromOrigin(width: quadrantWidth, height: quadrantHeight),
+      Quadrant(
+        x: quadrantX,
+        y: quadrantY,
+        width: quadrantWidth,
+        height: quadrantHeight,
+      ),
       maxItems: maxItems,
       maxDepth: maxDepth,
       getBounds: _getBoundFromMyObject,

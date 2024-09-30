@@ -20,20 +20,27 @@ class QuadtreeHomePage extends StatefulWidget {
 
 class _QuadtreeHomePageState extends State<QuadtreeHomePage> {
   late final QuadtreeControllerBase quadtreeController;
-  bool showQuatreeRepresentation = false;
+  bool showQuatreeRepresentation = true;
 
   @override
   void initState() {
-    quadtreeController = QuadtreeController(
+    quadtreeController = CachedQuadtreeController(
       quadrantWidth: 5000,
       quadrantHeight: 2500,
       maxItems: 20,
       maxDepth: 5,
     );
+    _createObjectsAndAddToQuadtree(
+      context: context,
+      quadtreeController: quadtreeController,
+      count: 40,
+    );
     super.initState();
   }
 
   void _handleTapDown(TapDownDetails details, BoxConstraints constraints) {
+    final qX = quadtreeController.quadtree.root.quadrant.x;
+    final qY = quadtreeController.quadtree.root.quadrant.y;
     final qW = quadtreeController.quadtree.root.quadrant.width;
     final qH = quadtreeController.quadtree.root.quadrant.height;
     final maxW = constraints.maxWidth;
@@ -51,17 +58,16 @@ class _QuadtreeHomePageState extends State<QuadtreeHomePage> {
     final double top = (maxH - (qH * scale)) / 2;
 
     // First, reverse the centering
-    final double adjustedX = tapX - left;
-    final double adjustedY = tapY - top;
+    double x = tapX - left;
+    double y = tapY - top;
 
     // Then, reverse the scaling
-    final x = adjustedX / scale;
-    final y = adjustedY / scale;
+    x = x / scale;
+    y = y / scale;
 
-    if (x < 0 || x > qW || y < 0 || y > qH) {
-      print('  Cannot Insert: Out of bounds');
-      return;
-    }
+    // Translate the tap to the quadrant
+    x = x + qX;
+    y = y + qY;
 
     _createObjectsAndAddToQuadtree(
       context: context,
@@ -159,6 +165,14 @@ class _ControlsState extends State<_Controls> {
               },
             ),
           ListenableBuilder(
+            listenable: widget.quadtreeController,
+            builder: (context, _) {
+              return Text(
+                'Current depth: ${widget.quadtreeController.quadtree.depth}',
+              );
+            },
+          ),
+          ListenableBuilder(
               listenable: widget.quadtreeController,
               builder: (context, _) {
                 return Column(
@@ -205,18 +219,30 @@ class _ControlsState extends State<_Controls> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               ElevatedButton(
-                onPressed: () => _createObjectsAndAddToQuadtree(
-                  context: context,
-                  myObject: MyObject(
-                    id: _uuid.v4(),
-                    x: widget.quadtreeController.quadrantWidth / 2,
-                    y: widget.quadtreeController.quadrantHeight / 2,
-                    width: widget.quadtreeController.quadrantWidth * 0.1,
-                    height: widget.quadtreeController.quadrantHeight * 0.1,
-                  ),
-                  quadtreeController: widget.quadtreeController,
+                onPressed: () {
+                  final qX = widget.quadtreeController.quadtree.root.quadrant.y;
+                  final qY = widget.quadtreeController.quadtree.root.quadrant.x;
+                  final qW  = widget.quadtreeController.quadtree.root.quadrant.width;
+                  final qH = widget.quadtreeController.quadtree.root.quadrant.height;
+
+                  final x = _r.nextDouble() * ((qX - qW) * 16) + (qX - qW);
+                  final y = _r.nextDouble() * ((qY - qH) * 16) + (qY - qH);
+
+                  _createObjectsAndAddToQuadtree(
+                    context: context,
+                    myObject: MyObject(
+                      id: _uuid.v4(),
+                      x: x,
+                      y: y,
+                      width: widget.quadtreeController.quadrantWidth * 0.25,
+                      height: widget.quadtreeController.quadrantHeight * 0.25,
+                    ),
+                    quadtreeController: widget.quadtreeController,
+                  );
+                },
+                child: const Text(
+                  'Add object far away from the quadrant bounds',
                 ),
-                child: const Text('Add object at the same position'),
               ),
               ElevatedButton(
                 onPressed: () => _createObjectsAndAddToQuadtree(
@@ -414,8 +440,8 @@ void _createObjectsAndAddToQuadtree({
 }) {
   print('Adding $count objects');
   for (var i = 0; i < count; i++) {
-    final maxWidth = quadtreeController.quadrantWidth;
-    final maxHeight = quadtreeController.quadrantHeight;
+    final maxWidth = quadtreeController.quadtree.root.quadrant.width;
+    final maxHeight = quadtreeController.quadtree.root.quadrant.height;
 
     final width = _r.nextDouble() * (maxWidth * 0.075) + (maxWidth * 0.01);
     final height = _r.nextDouble() * (maxHeight * 0.075) + (maxHeight * 0.01);
@@ -423,8 +449,10 @@ void _createObjectsAndAddToQuadtree({
     final maxX = maxWidth - width;
     final maxY = maxHeight - height;
 
-    final x = offset?.dx ?? _r.nextDouble() * maxX;
-    final y = offset?.dy ?? _r.nextDouble() * maxY;
+    final x = offset?.dx ??
+        (_r.nextDouble() * maxX) + quadtreeController.quadtree.root.quadrant.x;
+    final y = offset?.dy ??
+        (_r.nextDouble() * maxY) + quadtreeController.quadtree.root.quadrant.y;
 
     final obj = myObject ??
         MyObject(

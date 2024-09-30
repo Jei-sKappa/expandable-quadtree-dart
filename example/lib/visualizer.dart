@@ -59,6 +59,8 @@ class QuadtreePainter extends CustomPainter {
     final double scale = scaleX < scaleY
         ? scaleX
         : scaleY; // Pick the smaller scale to fit in both dimensions
+    
+    canvas.translate(-rootNode.quadrant.x * scale, -rootNode.quadrant.y * scale);
 
     // Calcola il posizionamento per centrare il quadtree
     final double left = (size.width - (rootNode.quadrant.width * scale)) / 2;

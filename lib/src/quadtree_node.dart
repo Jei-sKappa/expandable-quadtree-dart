@@ -3,10 +3,15 @@ part of 'quadtree.dart';
 class QuadtreeNode<T> with EquatableMixin {
   QuadtreeNode(
     this.quadrant, {
-    this.depth = 0,
+    int depth = 0,
+    int negativeDepth = 0,
     required this.tree,
-  })  : items = [],
-        nodes = {};
+  })  : _originalDepth = depth,
+        _originalNegativeDepth = negativeDepth,
+        items = [],
+        nodes = {} {
+    tree._setDepth(_originalDepth + negativeDepth);
+  }
 
   final Quadrant quadrant;
 
@@ -16,7 +21,12 @@ class QuadtreeNode<T> with EquatableMixin {
   /// Subnodes of the [Quadtree].
   final Map<QuadrantLocation, QuadtreeNode<T>> nodes;
 
-  final int depth;
+  final int _originalDepth;
+
+  final int _originalNegativeDepth;
+
+  int get depth =>
+      _originalDepth + (tree._negativeDepth - _originalNegativeDepth);
 
   late final Quadtree<T> tree;
 
@@ -26,7 +36,7 @@ class QuadtreeNode<T> with EquatableMixin {
 
   bool get isFull => items.length >= tree.maxItems;
 
-  bool get canSplit => depth <= tree.maxDepth;
+  bool get canSplit => depth < tree.maxDepth;
 
   @override
   List<Object?> get props => [quadrant, items, nodes, depth, tree];
@@ -39,8 +49,6 @@ class QuadtreeNode<T> with EquatableMixin {
   ///
   /// Takes quadrant to be inserted.
   void insert(T item) {
-    tree._setDepth(depth);
-
     /// If we have subnodes, call [insert] on the matching subnodes.
     if (!isLeaf) {
       final quadrantLocations = _calculateQuadrantLocations(item, quadrant);
@@ -253,7 +261,7 @@ class QuadtreeNode<T> with EquatableMixin {
 
   /// Split the node into 4 subnodes (ne, nw, sw, se)
   void _split() {
-    final nextDepth = depth + 1;
+    final nextDepth = _originalDepth + 1;
     final subWidth = quadrant.width / 2;
     final subHeight = quadrant.height / 2;
     final x = quadrant.x;
@@ -261,6 +269,7 @@ class QuadtreeNode<T> with EquatableMixin {
 
     // Top-right node
     final ne = QuadtreeNode<T>(
+      // TODO: Create an extension method for collapsing quadrants
       Quadrant(
         x: x + subWidth,
         y: y,
@@ -268,6 +277,7 @@ class QuadtreeNode<T> with EquatableMixin {
         height: subHeight,
       ),
       depth: nextDepth,
+      negativeDepth: tree._negativeDepth,
       tree: tree,
     );
 
@@ -280,6 +290,7 @@ class QuadtreeNode<T> with EquatableMixin {
         height: subHeight,
       ),
       depth: nextDepth,
+      negativeDepth: tree._negativeDepth,
       tree: tree,
     );
 
@@ -292,6 +303,7 @@ class QuadtreeNode<T> with EquatableMixin {
         height: subHeight,
       ),
       depth: nextDepth,
+      negativeDepth: tree._negativeDepth,
       tree: tree,
     );
 
@@ -304,6 +316,7 @@ class QuadtreeNode<T> with EquatableMixin {
         height: subHeight,
       ),
       depth: nextDepth,
+      negativeDepth: tree._negativeDepth,
       tree: tree,
     );
 

@@ -2,6 +2,8 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:equatable/equatable.dart';
+import 'package:fast_quadtree/src/extensions/expand_quadrant.dart';
+import 'package:fast_quadtree/src/extensions/move_quadrant.dart';
 import 'package:fast_quadtree/src/helpers/calculate_quadrant_location_from_rect.dart';
 import 'package:fast_quadtree/src/extensions/remove_duplicates.dart';
 import 'package:fast_quadtree/src/quadrant.dart';
@@ -28,12 +30,14 @@ class Quadtree<T> with EquatableMixin {
 
   final Rect Function(T) getBounds;
 
-  late final QuadtreeNode<T> root;
+  late QuadtreeNode<T> root;
 
   /// The maximum depth reached in the quadtree.
   int _depth = 0;
 
   int get depth => _depth;
+
+  int _negativeDepth = 0;
 
   int _lastUpdated = DateTime.now().millisecondsSinceEpoch;
 
@@ -51,11 +55,55 @@ class Quadtree<T> with EquatableMixin {
   @override
   bool? get stringify => true;
 
+  bool isRectOutOfOuterQuadrantBounds(Rect rect) =>
+      rect.left < root.quadrant.left ||
+      rect.right > root.quadrant.right ||
+      rect.top < root.quadrant.top ||
+      rect.bottom > root.quadrant.bottom;
+
+  void _maybeExpand(T item) {
+    final bounds = getBounds(item);
+
+    // Expand until the rect is within the outer quadrant bounds.
+    while (isRectOutOfOuterQuadrantBounds(bounds)) {
+      final locs = calculateQuadrantLocationsFromRect(bounds, root.quadrant);
+      _expand(locs.first);
+    }
+  }
+
+  void _expand(QuadrantLocation direction) {
+    final newRoot = QuadtreeNode<T>(
+      root.quadrant.expandTo(direction),
+      tree: this,
+    );
+
+    // The old root not will be a child of the new root node at the opposite
+    // location of the requested location.
+    final oldRootLocation = direction.opposite;
+
+    for (final loc in QuadrantLocation.values) {
+      if (loc == oldRootLocation) {
+        newRoot.nodes[loc] = root;
+      } else {
+        newRoot.nodes[loc] = QuadtreeNode<T>(
+          root.quadrant.moveTo(oldRootLocation, loc),
+          tree: this,
+        );
+      }
+    }
+
+    root = newRoot;
+    _negativeDepth++;
+    _depth++;
+  }
+
   /// Insert the item into the node. If the node exceeds the capacity,
   /// it will split and add all items to their corresponding subnodes.
   ///
   /// Takes quadrant to be inserted.
   void insert(T item) {
+    _maybeExpand(item);
+
     root.insert(item);
     _updateLastUpdated();
   }
