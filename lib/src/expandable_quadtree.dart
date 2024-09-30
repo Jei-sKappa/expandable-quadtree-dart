@@ -8,13 +8,6 @@ import 'package:fast_quadtree/src/extensions/move_quadrant.dart';
 class ExpandableQuadtree<T> extends QuadtreeDecorator<T> with EquatableMixin {
   ExpandableQuadtree(super._quadtree);
 
-  final List<T> _cachedItems = [];
-
-  List<T> get cachedItems => _cachedItems;
-
-  @override
-  List<Object?> get props => [...super.props, _cachedItems];
-
   @override
   bool insert(T item) {
     _maybeExpand(item);
