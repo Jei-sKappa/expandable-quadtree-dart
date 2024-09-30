@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:equatable/equatable.dart';
+import 'package:fast_quadtree/src/extensions/collapse_quadrant.dart';
 import 'package:fast_quadtree/src/extensions/expand_quadrant.dart';
 import 'package:fast_quadtree/src/extensions/move_quadrant.dart';
 import 'package:fast_quadtree/src/helpers/calculate_quadrant_location_from_rect.dart';

@@ -262,20 +262,10 @@ class QuadtreeNode<T> with EquatableMixin {
   /// Split the node into 4 subnodes (ne, nw, sw, se)
   void _split() {
     final nextDepth = _originalDepth + 1;
-    final subWidth = quadrant.width / 2;
-    final subHeight = quadrant.height / 2;
-    final x = quadrant.x;
-    final y = quadrant.y;
 
     // Top-right node
     final ne = QuadtreeNode<T>(
-      // TODO: Create an extension method for collapsing quadrants
-      Quadrant(
-        x: x + subWidth,
-        y: y,
-        width: subWidth,
-        height: subHeight,
-      ),
+      quadrant.collapseTo(QuadrantLocation.ne),
       depth: nextDepth,
       negativeDepth: tree._negativeDepth,
       tree: tree,
@@ -283,12 +273,7 @@ class QuadtreeNode<T> with EquatableMixin {
 
     // Top-left node
     final nw = QuadtreeNode<T>(
-      Quadrant(
-        x: x,
-        y: y,
-        width: subWidth,
-        height: subHeight,
-      ),
+      quadrant.collapseTo(QuadrantLocation.nw),
       depth: nextDepth,
       negativeDepth: tree._negativeDepth,
       tree: tree,
@@ -296,12 +281,7 @@ class QuadtreeNode<T> with EquatableMixin {
 
     // Bottom-left node
     final sw = QuadtreeNode<T>(
-      Quadrant(
-        x: x,
-        y: y + subHeight,
-        width: subWidth,
-        height: subHeight,
-      ),
+      quadrant.collapseTo(QuadrantLocation.sw),
       depth: nextDepth,
       negativeDepth: tree._negativeDepth,
       tree: tree,
@@ -309,12 +289,7 @@ class QuadtreeNode<T> with EquatableMixin {
 
     // Bottom-right node
     final se = QuadtreeNode<T>(
-      Quadrant(
-        x: x + subWidth,
-        y: y + subHeight,
-        width: subWidth,
-        height: subHeight,
-      ),
+      quadrant.collapseTo(QuadrantLocation.se),
       depth: nextDepth,
       negativeDepth: tree._negativeDepth,
       tree: tree,
