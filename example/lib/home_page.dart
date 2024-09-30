@@ -19,17 +19,17 @@ class QuadtreeHomePage extends StatefulWidget {
 }
 
 class _QuadtreeHomePageState extends State<QuadtreeHomePage> {
-  late final QuadtreeControllerBase quadtreeController;
+  late final QuadtreeController quadtreeController;
   bool showQuatreeRepresentation = true;
 
   @override
   void initState() {
-    quadtreeController = CachedQuadtreeController(
-      quadrantWidth: 5000,
-      quadrantHeight: 2500,
-      maxItems: 20,
-      maxDepth: 5,
-    );
+    quadtreeController = QuadtreeController(
+        quadrantWidth: 5000,
+        quadrantHeight: 2500,
+        maxItems: 20,
+        maxDepth: 5,
+        createQuadtree: _createQuadtree);
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _createObjectsAndAddToQuadtree(
@@ -39,6 +39,35 @@ class _QuadtreeHomePageState extends State<QuadtreeHomePage> {
       );
     });
     super.initState();
+  }
+
+  Rect _getBoundFromMyObject(MyObject item) => item.bounds;
+
+  Quadtree<MyObject> _createQuadtree({
+    required double quadrantX,
+    required double quadrantY,
+    required double quadrantWidth,
+    required double quadrantHeight,
+    required int maxItems,
+    required int maxDepth,
+  }) {
+    var quadtree = Quadtree<MyObject>(
+      Quadrant(
+        x: quadrantX,
+        y: quadrantY,
+        width: quadrantWidth,
+        height: quadrantHeight,
+      ),
+      maxItems: maxItems,
+      maxDepth: maxDepth,
+      getBounds: _getBoundFromMyObject,
+    );
+
+    quadtree = ExpandableQuadtree<MyObject>(quadtree);
+
+    quadtree = CachedQuadtree<MyObject>(quadtree);
+
+    return quadtree;
   }
 
   void _handleTapDown(TapDownDetails details, BoxConstraints constraints) {
@@ -133,7 +162,7 @@ class _Controls extends StatefulWidget {
     required this.quadtreeController,
   });
 
-  final QuadtreeControllerBase quadtreeController;
+  final QuadtreeController quadtreeController;
 
   @override
   State<_Controls> createState() => _ControlsState();
@@ -158,7 +187,7 @@ class _ControlsState extends State<_Controls> {
           Text(
             'Quadrant Size: ${widget.quadtreeController.quadrantWidth} x ${widget.quadtreeController.quadrantHeight}',
           ),
-          if (widget.quadtreeController is CachedQuadtreeController)
+          if (widget.quadtreeController.quadtree is CachedQuadtree)
             ListenableBuilder(
               listenable: widget.quadtreeController,
               builder: (context, _) {
@@ -440,10 +469,11 @@ void _createObjectsAndAddToQuadtree({
   required BuildContext context,
   MyObject? myObject,
   int count = 1,
-  required QuadtreeControllerBase quadtreeController,
+  required QuadtreeController quadtreeController,
   Offset? offset,
 }) {
   print('Adding $count objects');
+  bool valid = true;
   for (var i = 0; i < count; i++) {
     final maxWidth = quadtreeController.quadtree.root.quadrant.width;
     final maxHeight = quadtreeController.quadtree.root.quadrant.height;
@@ -468,11 +498,13 @@ void _createObjectsAndAddToQuadtree({
           height: height,
         );
     if (i % 1000 == 0) print('  Adding object $i: $obj');
-    quadtreeController.insertObject(obj);
+    valid = quadtreeController.insertObject(obj);
   }
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text("Added $count objects"),
+      content: Text(
+        valid ? "Added $count objects" : "Failed to add $count objects",
+      ),
       duration: const Duration(seconds: 2),
     ),
   );

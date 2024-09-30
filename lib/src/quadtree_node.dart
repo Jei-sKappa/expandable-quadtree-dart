@@ -10,7 +10,7 @@ class QuadtreeNode<T> with EquatableMixin {
         _originalNegativeDepth = negativeDepth,
         items = [],
         nodes = {} {
-    tree._setDepth(_originalDepth + negativeDepth);
+    tree._communicateNewNodeDepth(_originalDepth + negativeDepth);
   }
 
   final Quadrant quadrant;

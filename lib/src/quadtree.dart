@@ -3,14 +3,14 @@ import 'dart:ui';
 
 import 'package:equatable/equatable.dart';
 import 'package:fast_quadtree/src/extensions/collapse_quadrant.dart';
-import 'package:fast_quadtree/src/extensions/expand_quadrant.dart';
-import 'package:fast_quadtree/src/extensions/move_quadrant.dart';
 import 'package:fast_quadtree/src/helpers/calculate_quadrant_location_from_rect.dart';
 import 'package:fast_quadtree/src/extensions/remove_duplicates.dart';
 import 'package:fast_quadtree/src/quadrant.dart';
 import 'package:fast_quadtree/src/quadrant_location.dart';
+import 'package:meta/meta.dart';
 
 part 'quadtree_node.dart';
+part 'quadtree_decorator.dart';
 
 class Quadtree<T> with EquatableMixin {
   Quadtree(
@@ -38,7 +38,17 @@ class Quadtree<T> with EquatableMixin {
 
   int get depth => _depth;
 
+  @protected
+  set depth(int newDepth) => _depth = newDepth;
+
+  // TODO: Negative Depth should be a propery of ExpandableQuadtree
   int _negativeDepth = 0;
+
+  @protected
+  int get negativeDepth => _negativeDepth;
+
+  @protected
+  set negativeDepth(int newNegativeDepth) => _negativeDepth = newNegativeDepth;
 
   int _lastUpdated = DateTime.now().millisecondsSinceEpoch;
 
@@ -48,7 +58,7 @@ class Quadtree<T> with EquatableMixin {
     _lastUpdated = DateTime.now().millisecondsSinceEpoch;
   }
 
-  void _setDepth(int newDepth) => _depth = max(_depth, newDepth);
+  void _communicateNewNodeDepth(int newDepth) => _depth = max(_depth, newDepth);
 
   @override
   List<Object?> get props => [maxItems, maxDepth, getBounds, root, _depth];
@@ -62,59 +72,30 @@ class Quadtree<T> with EquatableMixin {
       rect.top < root.quadrant.top ||
       rect.bottom > root.quadrant.bottom;
 
-  void _maybeExpand(T item) {
-    final bounds = getBounds(item);
-
-    // Expand until the rect is within the outer quadrant bounds.
-    while (isRectOutOfOuterQuadrantBounds(bounds)) {
-      final locs = calculateQuadrantLocationsFromRect(bounds, root.quadrant);
-      _expand(locs.first);
-    }
-  }
-
-  void _expand(QuadrantLocation direction) {
-    final newRoot = QuadtreeNode<T>(
-      root.quadrant.expandTo(direction),
-      tree: this,
-    );
-
-    // The old root not will be a child of the new root node at the opposite
-    // location of the requested location.
-    final oldRootLocation = direction.opposite;
-
-    for (final loc in QuadrantLocation.values) {
-      if (loc == oldRootLocation) {
-        newRoot.nodes[loc] = root;
-      } else {
-        newRoot.nodes[loc] = QuadtreeNode<T>(
-          root.quadrant.moveTo(oldRootLocation, loc),
-          tree: this,
-        );
-      }
-    }
-
-    root = newRoot;
-    _negativeDepth++;
-    _depth++;
-  }
-
   /// Insert the item into the node. If the node exceeds the capacity,
   /// it will split and add all items to their corresponding subnodes.
   ///
   /// Takes quadrant to be inserted.
-  void insert(T item) {
-    _maybeExpand(item);
+  bool insert(T item) {
+    print('Quadtree: Inserting item');
+    if (isRectOutOfOuterQuadrantBounds(getBounds(item))) return false;
 
     root.insert(item);
     _updateLastUpdated();
+
+    return true;
   }
 
   /// Insert all items into the [Quadtree]
-  void insertAll(List<T> items) {
+  bool insertAll(List<T> items) {
+    bool valid = true;
+
     for (final item in items) {
-      insert(item);
+      valid = insert(item);
     }
     _updateLastUpdated();
+
+    return valid;
   }
 
   /// Remove the item from the [Quadtree] looping through **all** nodes.

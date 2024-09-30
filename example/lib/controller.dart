@@ -2,18 +2,24 @@ import 'package:example/model/my_object.dart';
 import 'package:fast_quadtree/fast_quadtree.dart';
 import 'package:flutter/material.dart';
 
-Rect _getBoundFromMyObject(MyObject item) => item.bounds;
-
-abstract class QuadtreeControllerBase with ChangeNotifier {
-  QuadtreeControllerBase({
+class QuadtreeController with ChangeNotifier {
+  QuadtreeController({
     this.quadrantX = 0,
     this.quadrantY = 0,
     required this.quadrantWidth,
     required this.quadrantHeight,
     this.maxItems = 4,
     this.maxDepth = 4,
+    required this.createQuadtree,
   }) {
-    _initQuadtree();
+    quadtree = createQuadtree(
+      quadrantX: quadrantX,
+      quadrantY: quadrantY,
+      quadrantWidth: quadrantWidth,
+      quadrantHeight: quadrantHeight,
+      maxItems: maxItems,
+      maxDepth: maxDepth,
+    );
   }
 
   final double quadrantX;
@@ -22,24 +28,48 @@ abstract class QuadtreeControllerBase with ChangeNotifier {
   final double quadrantHeight;
   int maxItems;
   int maxDepth;
+  late Quadtree<MyObject> quadtree;
 
-  Quadtree<MyObject> get quadtree;
-
-  void _initQuadtree();
+  Quadtree<MyObject> Function({
+    required double quadrantX,
+    required double quadrantY,
+    required double quadrantWidth,
+    required double quadrantHeight,
+    required int maxItems,
+    required int maxDepth,
+  }) createQuadtree;
 
   void updateMaxItems(int value) {
     maxItems = value;
-    _initQuadtree();
+    createQuadtree(
+      quadrantX: quadrantX,
+      quadrantY: quadrantY,
+      quadrantWidth: quadrantWidth,
+      quadrantHeight: quadrantHeight,
+      maxItems: maxItems,
+      maxDepth: maxDepth,
+    );
   }
 
   void updateMaxDepth(int value) {
     maxDepth = value;
-    _initQuadtree();
+    createQuadtree(
+      quadrantX: quadrantX,
+      quadrantY: quadrantY,
+      quadrantWidth: quadrantWidth,
+      quadrantHeight: quadrantHeight,
+      maxItems: maxItems,
+      maxDepth: maxDepth,
+    );
   }
 
-  void insertObject(MyObject object) {
-    quadtree.insert(object);
-    notifyListeners();
+  bool insertObject(MyObject object) {
+    if (quadtree.insert(object)) {
+      notifyListeners();
+      return true;
+    }
+
+    return false;
   }
 
   void removeObject(MyObject object) {
@@ -49,70 +79,6 @@ abstract class QuadtreeControllerBase with ChangeNotifier {
 
   void clearQuadtree() {
     quadtree.clear();
-    notifyListeners();
-  }
-}
-
-class QuadtreeController extends QuadtreeControllerBase {
-  QuadtreeController({
-    super.quadrantX,
-    super.quadrantY,
-    required super.quadrantWidth,
-    required super.quadrantHeight,
-    super.maxItems,
-    super.maxDepth,
-  });
-
-  late Quadtree<MyObject> _quadtree;
-
-  @override
-  Quadtree<MyObject> get quadtree => _quadtree;
-
-  @override
-  void _initQuadtree() {
-    _quadtree = Quadtree<MyObject>(
-      Quadrant(
-        x: quadrantX,
-        y: quadrantY,
-        width: quadrantWidth,
-        height: quadrantHeight,
-      ),
-      maxItems: maxItems,
-      maxDepth: maxDepth,
-      getBounds: _getBoundFromMyObject,
-    );
-    notifyListeners();
-  }
-}
-
-class CachedQuadtreeController extends QuadtreeControllerBase {
-  CachedQuadtreeController({
-    super.quadrantX,
-    super.quadrantY,
-    required super.quadrantWidth,
-    required super.quadrantHeight,
-    super.maxItems,
-    super.maxDepth,
-  });
-
-  late CachedQuadtree<MyObject> _quadtree;
-
-  @override
-  CachedQuadtree<MyObject> get quadtree => _quadtree;
-
-  @override
-  void _initQuadtree() {
-    _quadtree = CachedQuadtree<MyObject>(
-      Quadrant(
-        x: quadrantX,
-        y: quadrantY,
-        width: quadrantWidth,
-        height: quadrantHeight,
-      ),
-      maxItems: maxItems,
-      maxDepth: maxDepth,
-      getBounds: _getBoundFromMyObject,
-    );
     notifyListeners();
   }
 }

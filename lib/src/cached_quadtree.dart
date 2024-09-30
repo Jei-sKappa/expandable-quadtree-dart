@@ -1,13 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'package:fast_quadtree/src/quadtree.dart';
 
-class CachedQuadtree<T> extends Quadtree<T> with EquatableMixin {
-  CachedQuadtree(
-    super.quadrant, {
-    super.maxItems,
-    super.maxDepth,
-    required super.getBounds,
-  });
+class CachedQuadtree<T> extends QuadtreeDecorator<T> with EquatableMixin {
+  CachedQuadtree(super._quadtree);
+
   final List<T> _cachedItems = [];
 
   List<T> get cachedItems => _cachedItems;
@@ -16,12 +12,13 @@ class CachedQuadtree<T> extends Quadtree<T> with EquatableMixin {
   List<Object?> get props => [...super.props, _cachedItems];
 
   @override
-  bool? get stringify => true;
+  bool insert(T item) {
+    if (super.insert(item)) {
+      _cachedItems.add(item);
+      return true;
+    }
 
-  @override
-  void insert(T item) {
-    super.insert(item);
-    _cachedItems.add(item);
+    return false;
   }
 
   @override
