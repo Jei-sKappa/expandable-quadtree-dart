@@ -30,11 +30,14 @@ class _QuadtreeHomePageState extends State<QuadtreeHomePage> {
       maxItems: 20,
       maxDepth: 5,
     );
-    _createObjectsAndAddToQuadtree(
-      context: context,
-      quadtreeController: quadtreeController,
-      count: 40,
-    );
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _createObjectsAndAddToQuadtree(
+        context: context,
+        quadtreeController: quadtreeController,
+        count: 40,
+      );
+    });
     super.initState();
   }
 
@@ -222,8 +225,10 @@ class _ControlsState extends State<_Controls> {
                 onPressed: () {
                   final qX = widget.quadtreeController.quadtree.root.quadrant.y;
                   final qY = widget.quadtreeController.quadtree.root.quadrant.x;
-                  final qW  = widget.quadtreeController.quadtree.root.quadrant.width;
-                  final qH = widget.quadtreeController.quadtree.root.quadrant.height;
+                  final qW =
+                      widget.quadtreeController.quadtree.root.quadrant.width;
+                  final qH =
+                      widget.quadtreeController.quadtree.root.quadrant.height;
 
                   final x = _r.nextDouble() * ((qX - qW) * 16) + (qX - qW);
                   final y = _r.nextDouble() * ((qY - qH) * 16) + (qY - qH);
