@@ -63,22 +63,37 @@ class _QuadtreeHomePageState extends State<QuadtreeHomePage> {
       getBounds: _getBoundFromMyObject,
     );
 
-    quadtree = ExpandableQuadtree<MyObject>(quadtree);
-
     quadtree = CachedQuadtree<MyObject>(quadtree);
+
+    // quadtree = ExpandableQuadtree<MyObject>(quadtree);
+    quadtree = VerticallyExpandableQuadtree<MyObject>(quadtree);
 
     return quadtree;
   }
 
   void _handleTapDown(TapDownDetails details, BoxConstraints constraints) {
-    final qX = quadtreeController.quadtree.root.quadrant.x;
-    final qY = quadtreeController.quadtree.root.quadrant.y;
-    final qW = quadtreeController.quadtree.root.quadrant.width;
-    final qH = quadtreeController.quadtree.root.quadrant.height;
     final maxW = constraints.maxWidth;
     final maxH = constraints.maxHeight;
     final tapX = details.localPosition.dx;
     final tapY = details.localPosition.dy;
+
+    late final double qX;
+    late final double qY;
+    late final double qW;
+    late final double qH;
+    if (quadtreeController.quadtree is VerticallyExpandableQuadtree) {
+      final vQuadtree =
+          quadtreeController.quadtree as VerticallyExpandableQuadtree;
+      qX = vQuadtree.nodeX;
+      qY = vQuadtree.yCoord;
+      qW = vQuadtree.nodeWidth;
+      qH = vQuadtree.totalHeight;
+    } else {
+      qX = quadtreeController.quadtree.root.quadrant.x;
+      qY = quadtreeController.quadtree.root.quadrant.y;
+      qW = quadtreeController.quadtree.root.quadrant.width;
+      qH = quadtreeController.quadtree.root.quadrant.height;
+    }
 
     // Scale the quadtree to the screen size, preserving aspect ratio
     final double scaleX = maxW / qW;
@@ -252,15 +267,37 @@ class _ControlsState extends State<_Controls> {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  final qX = widget.quadtreeController.quadtree.root.quadrant.y;
-                  final qY = widget.quadtreeController.quadtree.root.quadrant.x;
-                  final qW =
-                      widget.quadtreeController.quadtree.root.quadrant.width;
-                  final qH =
-                      widget.quadtreeController.quadtree.root.quadrant.height;
+                  final newObjWidth = widget.quadtreeController.quadrantWidth * 0.25;
+                  final newObjHeight = widget.quadtreeController.quadrantHeight * 0.25;
 
-                  final x = _r.nextDouble() * ((qX - qW) * 16) + (qX - qW);
-                  final y = _r.nextDouble() * ((qY - qH) * 16) + (qY - qH);
+                  late final double qW;
+                  late final double qH;
+                  late final double qX;
+                  late final double qY;
+                  late final double x;
+                  late final double y;
+                  if (widget.quadtreeController.quadtree
+                      is VerticallyExpandableQuadtree) {
+                    final vQuadtree = widget.quadtreeController.quadtree
+                        as VerticallyExpandableQuadtree;
+                    qW = vQuadtree.nodeWidth;
+                    qH = vQuadtree.totalHeight;
+                    qX = vQuadtree.nodeX;
+                    qY = vQuadtree.yCoord;
+                    // Y can be anywhere in the quadtree so randomize a big one
+                    y = _r.nextDouble() * ((qY - qH) * 2) + (qY - qH);
+                    // X must stay within the bounds of the quadtree (qW)
+                    final maxX = qW - newObjWidth;
+                    x = _r.nextDouble() * maxX;
+                  } else {
+                    qW = widget.quadtreeController.quadtree.root.quadrant.width;
+                    qH =
+                        widget.quadtreeController.quadtree.root.quadrant.height;
+                    qX = widget.quadtreeController.quadtree.root.quadrant.x;
+                    qY = widget.quadtreeController.quadtree.root.quadrant.y;
+                    x = _r.nextDouble() * ((qX - qW) * 16) + (qX - qW);
+                    y = _r.nextDouble() * ((qY - qH) * 16) + (qY - qH);
+                  }
 
                   _createObjectsAndAddToQuadtree(
                     context: context,
@@ -268,8 +305,8 @@ class _ControlsState extends State<_Controls> {
                       id: _uuid.v4(),
                       x: x,
                       y: y,
-                      width: widget.quadtreeController.quadrantWidth * 0.25,
-                      height: widget.quadtreeController.quadrantHeight * 0.25,
+                      width: newObjWidth,
+                      height: newObjHeight,
                     ),
                     quadtreeController: widget.quadtreeController,
                   );
@@ -475,28 +512,43 @@ void _createObjectsAndAddToQuadtree({
   print('Adding $count objects');
   bool valid = true;
   for (var i = 0; i < count; i++) {
-    final maxWidth = quadtreeController.quadtree.root.quadrant.width;
-    final maxHeight = quadtreeController.quadtree.root.quadrant.height;
+    late final double qW;
+    late final double qH;
+    late final double qX;
+    late final double qY;
+    if (quadtreeController.quadtree is VerticallyExpandableQuadtree) {
+      final vQuadtree =
+          quadtreeController.quadtree as VerticallyExpandableQuadtree;
+      qW = vQuadtree.nodeWidth;
+      qH = vQuadtree.totalHeight;
+      qX = vQuadtree.nodeX;
+      qY = vQuadtree.yCoord;
+    } else {
+      qW = quadtreeController.quadtree.root.quadrant.width;
+      qH = quadtreeController.quadtree.root.quadrant.height;
+      qX = quadtreeController.quadtree.root.quadrant.x;
+      qY = quadtreeController.quadtree.root.quadrant.y;
+    }
 
-    final width = _r.nextDouble() * (maxWidth * 0.075) + (maxWidth * 0.01);
-    final height = _r.nextDouble() * (maxHeight * 0.075) + (maxHeight * 0.01);
+    MyObject? obj = myObject;
+    if (obj == null) {
+      final width = _r.nextDouble() * (qW * 0.075) + (qW * 0.01);
+      final height = _r.nextDouble() * (qH * 0.075) + (qH * 0.01);
 
-    final maxX = maxWidth - width;
-    final maxY = maxHeight - height;
+      final maxX = qW - width;
+      final maxY = qH - height;
 
-    final x = offset?.dx ??
-        (_r.nextDouble() * maxX) + quadtreeController.quadtree.root.quadrant.x;
-    final y = offset?.dy ??
-        (_r.nextDouble() * maxY) + quadtreeController.quadtree.root.quadrant.y;
+      final x = offset?.dx ?? (_r.nextDouble() * maxX) + qX;
+      final y = offset?.dy ?? (_r.nextDouble() * maxY) + qY;
 
-    final obj = myObject ??
-        MyObject(
-          id: "$i-${_uuid.v4()}",
-          x: x,
-          y: y,
-          width: width,
-          height: height,
-        );
+      obj = MyObject(
+        id: "$i-${_uuid.v4()}",
+        x: x,
+        y: y,
+        width: width,
+        height: height,
+      );
+    }
     if (i % 1000 == 0) print('  Adding object $i: $obj');
     valid = quadtreeController.insertObject(obj);
   }

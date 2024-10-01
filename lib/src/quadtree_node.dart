@@ -181,6 +181,15 @@ class QuadtreeNode<T> with EquatableMixin {
     return nodes;
   }
 
+  /// Retrieves all quadrants from the given quadtree, including nested
+  /// quadrants.
+  ///
+  /// This method is a recursive function that traverses the entire quadtree
+  /// structure and collects all quadrants into a single list.
+  ///
+  /// - Returns: A list of all quadrants in the quadtree.
+  List<Quadrant> getAllQuadrants() => getAllQuadrantsFromTreeNode(this);
+
   /// Retrieves all items from the quadtree, optionally removing duplicates.
   ///
   /// This method traverses the entire quadtree and collects all items into a

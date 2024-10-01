@@ -150,7 +150,7 @@ class Quadtree<T> with EquatableMixin {
   /// - Parameter quadtree: The quadtree from which to retrieve all quadrants.
   /// - Returns: A list of all quadrants in the quadtree.
   static List<Quadrant> getAllQuadrantsFromTree<T>(Quadtree<T> quadtree) =>
-      QuadtreeNode.getAllQuadrantsFromTreeNode(quadtree.root);
+      quadtree.root.getAllQuadrants();
 
   /// Retrieves all quadrants from the quadtree.
   ///
