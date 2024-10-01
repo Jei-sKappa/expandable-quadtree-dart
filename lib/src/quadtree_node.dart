@@ -13,6 +13,34 @@ class QuadtreeNode<T> with EquatableMixin {
     tree._communicateNewNodeDepth(_originalDepth + negativeDepth);
   }
 
+  factory QuadtreeNode.fromMap(
+    Map<String, dynamic> map,
+    Quadtree<T> tree,
+    T Function(Map<String, dynamic>) fromMapT,
+  ) {
+    final node = QuadtreeNode<T>(
+      Quadrant.fromMap(map['quadrant']),
+      depth: map['depth'] as int,
+      negativeDepth: map['negativeDepth'] as int,
+      tree: tree,
+    );
+
+    for (final item in (map['items'] as List)) {
+      node.items.add(fromMapT(item));
+    }
+
+    for (final entry in (map['nodes'] as Map).entries) {
+      final quadrantLocation = QuadrantLocation.fromMap(entry.key);
+      node.nodes[quadrantLocation] = QuadtreeNode.fromMap(
+        entry.value as Map<String, dynamic>,
+        tree,
+        fromMapT,
+      );
+    }
+
+    return node;
+  }
+
   final Quadrant quadrant;
 
   /// Items contained within the node
@@ -323,5 +351,20 @@ class QuadtreeNode<T> with EquatableMixin {
   ) {
     final bounds = tree.getBounds(item);
     return calculateQuadrantLocationsFromRect(bounds, quadrant);
+  }
+
+  Map<String, dynamic> toMap(Map<String, dynamic> Function(T) toMapT) {
+    return {
+      'quadrant': quadrant.toMap(),
+      'depth': _originalDepth,
+      'negativeDepth': _originalNegativeDepth,
+      'items': items.map(toMapT).toList(),
+      'nodes': nodes.map(
+        (quandrantLoc, node) => MapEntry(
+          quandrantLoc.toMap(),
+          node.toMap(toMapT),
+        ),
+      ),
+    };
   }
 }

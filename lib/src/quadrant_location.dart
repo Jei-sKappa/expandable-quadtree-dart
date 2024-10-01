@@ -27,4 +27,32 @@ enum QuadrantLocation {
         QuadrantLocation.sw => QuadrantLocation.ne,
         QuadrantLocation.se => QuadrantLocation.nw,
       };
+
+  static QuadrantLocation fromMap(String key) {
+    switch (key) {
+      case 'ne':
+        return QuadrantLocation.ne;
+      case 'nw':
+        return QuadrantLocation.nw;
+      case 'sw':
+        return QuadrantLocation.sw;
+      case 'se':
+        return QuadrantLocation.se;
+      default:
+        throw ArgumentError.value(key, 'key', 'Invalid QuadrantLocation');
+    }
+  }
+
+  String toMap() {
+    switch (this) {
+      case QuadrantLocation.ne:
+        return 'ne';
+      case QuadrantLocation.nw:
+        return 'nw';
+      case QuadrantLocation.sw:
+        return 'sw';
+      case QuadrantLocation.se:
+        return 'se';
+    }
+  }
 }

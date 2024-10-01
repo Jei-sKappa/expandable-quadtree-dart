@@ -25,6 +25,35 @@ class Quadtree<T> with EquatableMixin {
     );
   }
 
+  Quadtree._({
+    required Quadrant quadrant,
+    required this.maxItems,
+    required this.maxDepth,
+    required this.getBounds,
+  }) {
+    root = QuadtreeNode<T>(
+      quadrant,
+      tree: this,
+    );
+  }
+
+  factory Quadtree.fromMap(
+    Map<String, dynamic> map,
+    Rect Function(T) getBounds,
+    T Function(Map<String, dynamic>) fromMapT,
+  ) {
+    final tree = Quadtree._(
+      quadrant: Quadrant.fromMap(map['quadrant']),
+      maxItems: map['maxItems'] as int,
+      maxDepth: map['maxDepth'] as int,
+      getBounds: getBounds,
+    );
+    final List<Map<String, dynamic>> items = map['items'];
+    final List<T> itemsT = items.map(fromMapT).toList();
+    tree.insertAll(itemsT);
+    return tree;
+  }
+
   final int maxItems;
 
   final int maxDepth;
@@ -77,7 +106,6 @@ class Quadtree<T> with EquatableMixin {
   ///
   /// Takes quadrant to be inserted.
   bool insert(T item) {
-    print('Quadtree: Inserting item');
     if (isRectOutOfOuterQuadrantBounds(getBounds(item))) return false;
 
     root.insert(item);
@@ -195,4 +223,11 @@ class Quadtree<T> with EquatableMixin {
     root.clear();
     _updateLastUpdated();
   }
+
+  Map<String, dynamic> toMap(Map<String, dynamic> Function(T) toMapT) => {
+        'quadrant': root.quadrant.toMap(),
+        'maxItems': maxItems,
+        'maxDepth': maxDepth,
+        'items': getAllItems(removeDuplicates: true).map(toMapT).toList(),
+      };
 }

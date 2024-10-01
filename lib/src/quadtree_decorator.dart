@@ -5,6 +5,19 @@ class QuadtreeDecorator<T> with EquatableMixin implements Quadtree<T> {
 
   QuadtreeDecorator(this._quadtree);
 
+  factory QuadtreeDecorator.fromMap(
+    Map<String, dynamic> map,
+    Rect Function(T) getBounds,
+    T Function(Map<String, dynamic>) fromMapT,
+  ) =>
+      QuadtreeDecorator(
+        Quadtree.fromMap(
+          map,
+          getBounds,
+          fromMapT,
+        ),
+      );
+
   @override
   int get depth => _quadtree.depth;
 
@@ -89,4 +102,8 @@ class QuadtreeDecorator<T> with EquatableMixin implements Quadtree<T> {
 
   @override
   void _updateLastUpdated() => _quadtree._updateLastUpdated();
+
+  @override
+  Map<String, dynamic> toMap(Map<String, dynamic> Function(T) toMapT) =>
+      _quadtree.toMap(toMapT);
 }

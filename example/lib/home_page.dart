@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:example/controller.dart';
@@ -123,12 +124,76 @@ class _QuadtreeHomePageState extends State<QuadtreeHomePage> {
     );
   }
 
+  List<String> getJsonInChunks({int chunkSize = 2500, bool formatted = true}) {
+    final map = quadtreeController.quadtree.toMap(MyObject.convertToMap);
+
+    late final String mapJson;
+    if (formatted) {
+      const encoder = JsonEncoder.withIndent('  ');
+      mapJson = encoder.convert(map);
+    } else {
+      mapJson = jsonEncode(map);
+    }
+    final chunks = <String>[];
+
+    // Split the JSON into chunks where last character is a comma
+    int start = 0;
+    while (start < mapJson.length) {
+      int end = min(mapJson.length, start + chunkSize);
+      if (end == mapJson.length) {
+        chunks.add(mapJson.substring(start, end));
+        break;
+      }
+
+      int commaIndex = mapJson.lastIndexOf(',', end);
+      if (commaIndex == -1 || commaIndex <= start) {
+        commaIndex = end;
+      }
+
+      chunks.add(mapJson.substring(start, commaIndex + 1));
+      start = commaIndex + 1;
+    }
+
+    return chunks;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Quadtree Visualizer'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.code),
+            onPressed: () async {
+              final jsonChunks = getJsonInChunks();
+
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: const Text('Quadtree as JSON'),
+                    content: SizedBox(
+                      width: double.maxFinite,
+                      height: 400.0,
+                      child: ListView.builder(
+                        itemCount: jsonChunks.length,
+                        itemBuilder: (context, index) {
+                          return Text(jsonChunks[index]);
+                        },
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Close'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
           Switch.adaptive(
             value: showQuatreeRepresentation,
             onChanged: (value) {
@@ -267,8 +332,10 @@ class _ControlsState extends State<_Controls> {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  final newObjWidth = widget.quadtreeController.quadrantWidth * 0.25;
-                  final newObjHeight = widget.quadtreeController.quadrantHeight * 0.25;
+                  final newObjWidth =
+                      widget.quadtreeController.quadrantWidth * 0.25;
+                  final newObjHeight =
+                      widget.quadtreeController.quadrantHeight * 0.25;
 
                   late final double qW;
                   late final double qH;
@@ -549,7 +616,6 @@ void _createObjectsAndAddToQuadtree({
         height: height,
       );
     }
-    if (i % 1000 == 0) print('  Adding object $i: $obj');
     valid = quadtreeController.insertObject(obj);
   }
   ScaffoldMessenger.of(context).showSnackBar(

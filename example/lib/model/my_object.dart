@@ -40,6 +40,26 @@ class MyObject with EquatableMixin {
   })  : color = _colorList[_colorIndex++ % _colorList.length],
         data = List<int>.generate(10, (index) => index);
 
+  MyObject._({
+    required this.id,
+    required this.x,
+    required this.y,
+    required this.width,
+    required this.height,
+    required this.color,
+    required this.data,
+  });
+
+  factory MyObject.fromMap(Map<String, dynamic> map) => MyObject._(
+        id: map['id'] as MyObjectID,
+        x: map['x'] as double,
+        y: map['y'] as double,
+        width: map['width'] as double,
+        height: map['height'] as double,
+        color: Color(map['color'] as int),
+        data: List<int>.from(map['data'] as List),
+      );
+
   @override
   List<Object?> get props => [id, x, y, width, height, color, data];
 
@@ -47,4 +67,17 @@ class MyObject with EquatableMixin {
   bool get stringify => true;
 
   Rect get bounds => Rect.fromLTWH(x, y, width, height);
+
+  static Map<String, dynamic> convertToMap(MyObject myObject) =>
+      myObject.toMap();
+
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'x': x,
+        'y': y,
+        'width': width,
+        'height': height,
+        'color': color.value,
+        'data': data,
+      };
 }
