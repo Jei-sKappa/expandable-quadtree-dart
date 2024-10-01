@@ -49,6 +49,7 @@ class QuadtreeController with ChangeNotifier {
       maxItems: maxItems,
       maxDepth: maxDepth,
     );
+    notifyListeners();
   }
 
   void updateMaxDepth(int value) {
@@ -61,6 +62,7 @@ class QuadtreeController with ChangeNotifier {
       maxItems: maxItems,
       maxDepth: maxDepth,
     );
+    notifyListeners();
   }
 
   bool insertObject(MyObject object) {
