@@ -22,15 +22,37 @@ class CachedQuadtree<T> extends QuadtreeDecorator<T> with EquatableMixin {
   }
 
   @override
+  bool insertAll(List<T> items) {
+    if(super.insertAll(items)) {
+      _cachedItems.addAll(items);
+      return true;
+    }
+
+    return false;
+  }
+
+  @override
   void remove(T item) {
     super.remove(item);
     _cachedItems.remove(item);
   }
 
   @override
+  void removeAll(List<T> items) {
+    super.removeAll(items);
+    _cachedItems.removeWhere((element) => items.contains(element));
+  }
+
+  @override
   void localizedRemove(T item) {
     super.localizedRemove(item);
     _cachedItems.remove(item);
+  }
+
+  @override
+  void localizedRemoveAll(List<T> items) {
+    super.localizedRemoveAll(items);
+    _cachedItems.removeWhere((element) => items.contains(element));
   }
 
   @override
