@@ -17,6 +17,7 @@ class QuadtreeController with ChangeNotifier {
     this.isCached = false,
     this.isExpandable = false,
     this.isVerticallyExpandable = false,
+    this.isHorizontallyExpandable = false,
   })  : _quadrantX = quadrantX,
         _quadrantY = quadrantY,
         _quadrantWidth = quadrantWidth,
@@ -25,8 +26,9 @@ class QuadtreeController with ChangeNotifier {
     assert(maxDepth > 0, 'maxDepth must be greater than 0');
     assert(quadrantWidth > 0, 'quadrantWidth must be greater than 0');
     assert(quadrantHeight > 0, 'quadrantHeight must be greater than 0');
-    assert(!(isExpandable && isVerticallyExpandable),
-        'isExpandable and isVerticallyExpandable cannot both be true');
+    assert(
+        !(isExpandable && isVerticallyExpandable && isHorizontallyExpandable),
+        'Only one of isExpandable, isVerticallyExpandable, or isHorizontallyExpandable can be true');
   }
 
   final double _quadrantX;
@@ -38,6 +40,7 @@ class QuadtreeController with ChangeNotifier {
   bool isCached;
   bool isExpandable;
   bool isVerticallyExpandable;
+  bool isHorizontallyExpandable;
 
   Isolate? _workerIsolate;
   late SendPort _sendPort;
@@ -66,6 +69,7 @@ class QuadtreeController with ChangeNotifier {
       'isCached': isCached,
       'isExpandable': isExpandable,
       'isVerticallyExpandable': isVerticallyExpandable,
+      'isHorizontallyExpandable': isHorizontallyExpandable,
     };
     _sendPort.send(['createQuadtree', null, initData]);
   }
@@ -104,7 +108,16 @@ class QuadtreeController with ChangeNotifier {
             maxDepth: data['maxDepth'],
             getBounds: getBounds,
           );
-        } else {
+        }
+        else if (data['isHorizontallyExpandable']) {
+          quadtree = HorizontallyExpandableQuadtree<MyObject>(
+            quadrant,
+            maxItems: data['maxItems'],
+            maxDepth: data['maxDepth'],
+            getBounds: getBounds,
+          );
+        }
+        else {
           quadtree = Quadtree<MyObject>(
             quadrant,
             maxItems: data['maxItems'],
@@ -117,7 +130,7 @@ class QuadtreeController with ChangeNotifier {
           quadtree = CachedQuadtree<MyObject>(quadtree);
         }
       } else if (command == 'getX') {
-          replyPort!.send(quadtree.left);
+        replyPort!.send(quadtree.left);
       } else if (command == 'getY') {
         replyPort!.send(quadtree.top);
       } else if (command == 'getWidth') {
@@ -232,6 +245,14 @@ class QuadtreeController with ChangeNotifier {
   Future<void> updateIsVerticallyExpandable(bool value) async {
     await _ensureInitialized();
     isVerticallyExpandable = value;
+    _createQuadtreeInWorker();
+    notifyListeners();
+  }
+
+  // Update the isHorizontallyExpandable parameter in the isolate
+  Future<void> updateIsHorizontallyExpandable(bool value) async {
+    await _ensureInitialized();
+    isHorizontallyExpandable = value;
     _createQuadtreeInWorker();
     notifyListeners();
   }

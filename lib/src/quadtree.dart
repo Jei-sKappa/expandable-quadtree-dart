@@ -7,6 +7,7 @@ import 'package:fast_quadtree/src/extensions/collapse_quadrant.dart';
 import 'package:fast_quadtree/src/extensions/is_rect_out_of_bounds_on_quadtree.dart';
 import 'package:fast_quadtree/src/helpers/calculate_quadrant_location_from_rect.dart';
 import 'package:fast_quadtree/src/extensions/remove_duplicates.dart';
+import 'package:fast_quadtree/src/horizontally_expandable_quadtree.dart';
 import 'package:fast_quadtree/src/quadrant.dart';
 import 'package:fast_quadtree/src/quadrant_location.dart';
 import 'package:fast_quadtree/src/vertically_expandable_quadtree.dart';
@@ -36,6 +37,8 @@ abstract class Quadtree<T> with EquatableMixin {
         return ExpandableQuadtree.fromMap(map, getBounds, fromMapT);
       case 'VerticallyExpandableQuadtree':
         return VerticallyExpandableQuadtree.fromMap(map, getBounds, fromMapT);
+      case 'HorizontallyExpandableQuadtree':
+        return HorizontallyExpandableQuadtree.fromMap(map, getBounds, fromMapT);
       default:
         throw ArgumentError('Invalid Quadtree type: $type');
     }
@@ -284,4 +287,118 @@ class SingleRootQuadtree<T> with EquatableMixin implements Quadtree<T> {
         'maxDepth': maxDepth,
         'items': getAllItems(removeDuplicates: true).map(toMapT).toList(),
       };
+}
+
+abstract class MultipleRootsQuadtree<T>
+    with EquatableMixin
+    implements Quadtree<T> {
+  MultipleRootsQuadtree(
+    Quadrant quadrant, {
+    required this.maxItems,
+    required this.maxDepth,
+    required this.getBounds,
+  }) {
+    quadtreeNodes[0] = QuadtreeNode<T>(
+      quadrant,
+      tree: this,
+    );
+  }
+
+  @override
+  final int maxItems;
+
+  @override
+  final int maxDepth;
+
+  @override
+  double get left => firstNode.quadrant.left;
+
+  @override
+  double get top => firstNode.quadrant.top;
+
+  @override
+  double get width => firstNode.quadrant.width;
+
+  @override
+  double get height => firstNode.quadrant.height;
+
+  @override
+  final Rect Function(T) getBounds;
+
+  int _depth = 0;
+
+  @override
+  int get depth => _depth;
+
+  @override
+  set depth(int newDepth) => _depth = newDepth;
+
+  int _negativeDepth = 0;
+
+  @override
+  int get negativeDepth => _negativeDepth;
+
+  @override
+  set negativeDepth(int newNegativeDepth) => _negativeDepth = newNegativeDepth;
+
+  @override
+  void communicateNewNodeDepth(int newDepth) => depth = max(depth, newDepth);
+
+  final Map<int, QuadtreeNode<T>> quadtreeNodes = {};
+
+  QuadtreeNode<T> get firstNode => quadtreeNodes[0]!;
+
+  @override
+  bool insertAll(List<T> items) {
+    bool valid = true;
+
+    for (final item in items) {
+      valid = insert(item);
+    }
+
+    return valid;
+  }
+
+  @override
+  void removeAll(List<T> items) {
+    for (final item in items) {
+      remove(item);
+    }
+  }
+
+  @override
+  void localizedRemoveAll(List<T> items) {
+    for (final item in items) {
+      localizedRemove(item);
+    }
+  }
+
+  @override
+  List<Quadrant> getAllQuadrants() {
+    List<Quadrant> results = [];
+
+    for (final node in quadtreeNodes.values) {
+      results.addAll(node.getAllQuadrants());
+    }
+
+    return results;
+  }
+
+  @override
+  List<T> getAllItems({bool removeDuplicates = true}) {
+    List<T> results = [];
+
+    for (final node in quadtreeNodes.values) {
+      results.addAll(node.getAllItems(removeDuplicates: removeDuplicates));
+    }
+
+    return results;
+  }
+
+  @override
+  void clear() {
+    for (final node in quadtreeNodes.values) {
+      node.clear();
+    }
+  }
 }

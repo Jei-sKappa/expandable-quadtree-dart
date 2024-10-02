@@ -106,15 +106,15 @@ class QuadtreePainter extends CustomPainter {
 
     canvas.translate(-quadtree.left * scale, -quadtree.top * scale);
 
-    if (quadtree is VerticallyExpandableQuadtree) {
-      _drawyVerticallyExpandableQuadtree(
+    if (quadtree is MultipleRootsQuadtree) {
+      _drawMultipleRootsQuadtree(
         canvas,
         size,
-        quadtree as VerticallyExpandableQuadtree<MyObject>,
+        quadtree as MultipleRootsQuadtree<MyObject>,
         scale,
       );
     } else if (quadtree is SingleRootQuadtree) {
-      _drawSingleQuadtree(
+      _drawSingleRootQuadtree(
         canvas,
         size,
         quadtree as SingleRootQuadtree<MyObject>,
@@ -130,16 +130,16 @@ class QuadtreePainter extends CustomPainter {
     print('-_' * 75);
   }
 
-  void _drawyVerticallyExpandableQuadtree(
+  void _drawMultipleRootsQuadtree(
     Canvas canvas,
     Size size,
-    VerticallyExpandableQuadtree<MyObject> quadtree,
+    MultipleRootsQuadtree<MyObject> quadtree,
     double scale,
   ) {
     // Iterate through all the quadtree nodes and draw each one
     for (final node in quadtree.quadtreeNodes.values) {
       // Translate canvas to draw each node
-      final double left = (size.width - (node.quadrant.width * scale)) / 2;
+      final double left = (size.width - (quadtree.width * scale)) / 2;
       final double top = (size.height - (quadtree.height * scale)) / 2;
 
       // Draw the objects in the quadtree
@@ -150,7 +150,7 @@ class QuadtreePainter extends CustomPainter {
     }
   }
 
-  void _drawSingleQuadtree(
+  void _drawSingleRootQuadtree(
     Canvas canvas,
     Size size,
     SingleRootQuadtree<MyObject> quadtree,

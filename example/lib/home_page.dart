@@ -30,6 +30,7 @@ class _QuadtreeHomePageState extends State<QuadtreeHomePage> {
       isCached: true,
       isExpandable: false,
       isVerticallyExpandable: false,
+      isHorizontallyExpandable: false,
     );
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -313,6 +314,13 @@ class _ControlsState extends State<_Controls> {
                     // X must stay within the bounds of the quadtree (qW)
                     final maxX = qW - newObjWidth;
                     x = _r.nextDouble() * maxX;
+                  } else if (widget
+                      .quadtreeController.isHorizontallyExpandable) {
+                    // X can be anywhere in the quadtree so randomize a big one
+                    x = _r.nextDouble() * ((qX - qW) * 2) + (qX - qW);
+                    // Y must stay within the bounds of the quadtree (qH)
+                    final maxY = qH - newObjHeight;
+                    y = _r.nextDouble() * maxY;
                   } else {
                     x = _r.nextDouble() * ((qX - qW) * 16) + (qX - qW);
                     y = _r.nextDouble() * ((qY - qH) * 16) + (qY - qH);

@@ -5,20 +5,14 @@ import 'package:equatable/equatable.dart';
 import 'package:fast_quadtree/fast_quadtree.dart';
 import 'package:fast_quadtree/src/extensions/position_details_on_quadtree.dart';
 
-class VerticallyExpandableQuadtree<T>
-    with EquatableMixin
-    implements Quadtree<T> {
+class VerticallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
+    with EquatableMixin {
   VerticallyExpandableQuadtree(
-    Quadrant quadrant, {
-    required this.maxItems,
-    required this.maxDepth,
-    required this.getBounds,
-  }) {
-    quadtreeNodes[0] = QuadtreeNode<T>(
-      quadrant,
-      tree: this,
-    );
-  }
+    super.quadrant, {
+    required super.maxItems,
+    required super.maxDepth,
+    required super.getBounds,
+  });
 
   factory VerticallyExpandableQuadtree.fromMap(
     Map<String, dynamic> map,
@@ -37,54 +31,16 @@ class VerticallyExpandableQuadtree<T>
     return tree;
   }
 
-  @override
-  final int maxItems;
-
-  @override
-  final int maxDepth;
-
-  @override
-  double get left => firstNode.quadrant.left;
-
   late double currentTop = firstNode.quadrant.top;
 
   @override
   double get top => currentTop;
-
-  @override
-  double get width => firstNode.quadrant.width;
 
   double get singleNodeHeight => firstNode.quadrant.height;
 
   @override
   double get height =>
       ((maxVerticalRow - minVerticalRow) + 1) * singleNodeHeight;
-
-  @override
-  final Rect Function(T) getBounds;
-
-  int _depth = 0;
-
-  @override
-  int get depth => _depth;
-
-  @override
-  set depth(int newDepth) => _depth = newDepth;
-
-  int _negativeDepth = 0;
-
-  @override
-  int get negativeDepth => _negativeDepth;
-
-  @override
-  set negativeDepth(int newNegativeDepth) => _negativeDepth = newNegativeDepth;
-
-  @override
-  void communicateNewNodeDepth(int newDepth) => depth = max(depth, newDepth);
-
-  final Map<int, QuadtreeNode<T>> quadtreeNodes = {};
-
-  QuadtreeNode<T> get firstNode => quadtreeNodes[0]!;
 
   int minVerticalRow = 0;
   int maxVerticalRow = 0;
@@ -95,8 +51,8 @@ class VerticallyExpandableQuadtree<T>
         maxDepth,
         getBounds,
         quadtreeNodes,
-        _depth,
-        _negativeDepth,
+        super.depth,
+        super.negativeDepth,
         minVerticalRow,
         maxVerticalRow
       ];
@@ -125,17 +81,6 @@ class VerticallyExpandableQuadtree<T>
   }
 
   @override
-  bool insertAll(List<T> items) {
-    bool valid = true;
-
-    for (final item in items) {
-      valid = insert(item);
-    }
-
-    return valid;
-  }
-
-  @override
   void remove(T item) {
     final bounds = getBounds(item);
 
@@ -148,13 +93,6 @@ class VerticallyExpandableQuadtree<T>
   }
 
   @override
-  void removeAll(List<T> items) {
-    for (final item in items) {
-      remove(item);
-    }
-  }
-
-  @override
   void localizedRemove(T item) {
     final bounds = getBounds(item);
 
@@ -163,13 +101,6 @@ class VerticallyExpandableQuadtree<T>
 
     if (quadtreeNodes.containsKey(verticalRow)) {
       quadtreeNodes[verticalRow]!.localizedRemove(item);
-    }
-  }
-
-  @override
-  void localizedRemoveAll(List<T> items) {
-    for (final item in items) {
-      localizedRemove(item);
     }
   }
 
@@ -191,35 +122,6 @@ class VerticallyExpandableQuadtree<T>
     }
 
     return results;
-  }
-
-  @override
-  List<Quadrant> getAllQuadrants() {
-    List<Quadrant> results = [];
-
-    for (final node in quadtreeNodes.values) {
-      results.addAll(node.getAllQuadrants());
-    }
-
-    return results;
-  }
-
-  @override
-  List<T> getAllItems({bool removeDuplicates = true}) {
-    List<T> results = [];
-
-    for (final node in quadtreeNodes.values) {
-      results.addAll(node.getAllItems(removeDuplicates: removeDuplicates));
-    }
-
-    return results;
-  }
-
-  @override
-  void clear() {
-    for (final node in quadtreeNodes.values) {
-      node.clear();
-    }
   }
 
   @override
