@@ -1,11 +1,8 @@
-import 'dart:convert';
 import 'dart:math';
 
 import 'package:example/controller.dart';
 import 'package:example/model/my_object.dart';
 import 'package:example/visualizer.dart';
-import 'package:fast_quadtree/fast_quadtree.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
@@ -26,11 +23,14 @@ class _QuadtreeHomePageState extends State<QuadtreeHomePage> {
   @override
   void initState() {
     quadtreeController = QuadtreeController(
-        quadrantWidth: 5000,
-        quadrantHeight: 2500,
-        maxItems: 20,
-        maxDepth: 5,
-        createQuadtree: _createQuadtree);
+      quadrantWidth: 5000,
+      quadrantHeight: 2500,
+      maxItems: 20,
+      maxDepth: 5,
+      isCached: true,
+      isExpandable: false,
+      isVerticallyExpandable: false,
+    );
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _createObjectsAndAddToQuadtree(
@@ -42,59 +42,25 @@ class _QuadtreeHomePageState extends State<QuadtreeHomePage> {
     super.initState();
   }
 
-  Rect _getBoundFromMyObject(MyObject item) => item.bounds;
-
-  Quadtree<MyObject> _createQuadtree({
-    required double quadrantX,
-    required double quadrantY,
-    required double quadrantWidth,
-    required double quadrantHeight,
-    required int maxItems,
-    required int maxDepth,
-  }) {
-    var quadtree = Quadtree<MyObject>(
-      Quadrant(
-        x: quadrantX,
-        y: quadrantY,
-        width: quadrantWidth,
-        height: quadrantHeight,
-      ),
-      maxItems: maxItems,
-      maxDepth: maxDepth,
-      getBounds: _getBoundFromMyObject,
-    );
-
-    quadtree = CachedQuadtree<MyObject>(quadtree);
-
-    // quadtree = ExpandableQuadtree<MyObject>(quadtree);
-    quadtree = VerticallyExpandableQuadtree<MyObject>(quadtree);
-
-    return quadtree;
+  @override
+  dispose() {
+    quadtreeController.dispose();
+    super.dispose();
   }
 
-  void _handleTapDown(TapDownDetails details, BoxConstraints constraints) {
+  Future<void> _handleTapDown(
+    TapDownDetails details,
+    BoxConstraints constraints,
+  ) async {
     final maxW = constraints.maxWidth;
     final maxH = constraints.maxHeight;
     final tapX = details.localPosition.dx;
     final tapY = details.localPosition.dy;
 
-    late final double qX;
-    late final double qY;
-    late final double qW;
-    late final double qH;
-    if (quadtreeController.quadtree is VerticallyExpandableQuadtree) {
-      final vQuadtree =
-          quadtreeController.quadtree as VerticallyExpandableQuadtree;
-      qX = vQuadtree.nodeX;
-      qY = vQuadtree.yCoord;
-      qW = vQuadtree.nodeWidth;
-      qH = vQuadtree.totalHeight;
-    } else {
-      qX = quadtreeController.quadtree.root.quadrant.x;
-      qY = quadtreeController.quadtree.root.quadrant.y;
-      qW = quadtreeController.quadtree.root.quadrant.width;
-      qH = quadtreeController.quadtree.root.quadrant.height;
-    }
+    final double qX = await quadtreeController.getX();
+    final double qY = await quadtreeController.getY();
+    final double qW = await quadtreeController.getWidth();
+    final double qH = await quadtreeController.getHeight();
 
     // Scale the quadtree to the screen size, preserving aspect ratio
     final double scaleX = maxW / qW;
@@ -124,16 +90,10 @@ class _QuadtreeHomePageState extends State<QuadtreeHomePage> {
     );
   }
 
-  List<String> getJsonInChunks({int chunkSize = 2500, bool formatted = true}) {
-    final map = quadtreeController.quadtree.toMap(MyObject.convertToMap);
+  Future<List<String>> getJsonInChunks(
+      {int chunkSize = 2500, bool formatted = true}) async {
+    final mapJson = await quadtreeController.getQuadtreeJson(formatted);
 
-    late final String mapJson;
-    if (formatted) {
-      const encoder = JsonEncoder.withIndent('  ');
-      mapJson = encoder.convert(map);
-    } else {
-      mapJson = jsonEncode(map);
-    }
     final chunks = <String>[];
 
     // Split the JSON into chunks where last character is a comma
@@ -166,7 +126,7 @@ class _QuadtreeHomePageState extends State<QuadtreeHomePage> {
           IconButton(
             icon: const Icon(Icons.code),
             onPressed: () async {
-              final jsonChunks = getJsonInChunks();
+              final jsonChunks = await getJsonInChunks();
 
               showDialog(
                 context: context,
@@ -249,6 +209,11 @@ class _Controls extends StatefulWidget {
 }
 
 class _ControlsState extends State<_Controls> {
+  double? quadrantWidth;
+  double? quadrantHeight;
+  int? nItems;
+  int? depth;
+  bool isLoaded = false;
   Duration? timeToRetrieveObjects;
   bool isLoadingRetrieveObjects = false;
   Duration? timeToGetAllObjects;
@@ -259,70 +224,70 @@ class _ControlsState extends State<_Controls> {
   bool isLoadingGetAllQuadrants = false;
 
   @override
+  void initState() {
+    _loadQuadtreeData();
+    widget.quadtreeController.addListener(_loadQuadtreeData);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    widget.quadtreeController.removeListener(_loadQuadtreeData);
+    super.dispose();
+  }
+
+  Future<void> _loadQuadtreeData() async {
+    quadrantWidth = await widget.quadtreeController.getWidth();
+    quadrantHeight = await widget.quadtreeController.getHeight();
+    nItems = (await widget.quadtreeController.getAllObjects()).length;
+    depth = await widget.quadtreeController.getDepth();
+
+    setState(() {
+      isLoaded = true;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
         children: [
           Text(
-            'Quadrant Size: ${widget.quadtreeController.quadrantWidth} x ${widget.quadtreeController.quadrantHeight}',
+            'Quadrant Size: ${quadrantWidth ?? '?'} x ${quadrantHeight ?? '?'}',
           ),
-          if (widget.quadtreeController.quadtree is CachedQuadtree)
-            ListenableBuilder(
-              listenable: widget.quadtreeController,
-              builder: (context, _) {
-                return Text(
-                  'Number of Objects: ${widget.quadtreeController.quadtree.getAllItems().length}',
-                );
-              },
-            ),
-          ListenableBuilder(
-            listenable: widget.quadtreeController,
-            builder: (context, _) {
-              return Text(
-                'Current depth: ${widget.quadtreeController.quadtree.depth}',
-              );
-            },
+          Text('Number of Objects: ${nItems ?? '?'}'),
+          Text('Current depth: ${depth ?? '?'}'),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Max Items per Node: ${widget.quadtreeController.maxItems}'),
+              Slider(
+                min: 1,
+                max: 100,
+                divisions: 100,
+                value: widget.quadtreeController.maxItems.toDouble(),
+                onChanged: (value) {
+                  widget.quadtreeController.updateMaxItems(value.toInt());
+                },
+              ),
+            ],
           ),
-          ListenableBuilder(
-              listenable: widget.quadtreeController,
-              builder: (context, _) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                        'Max Items per Node: ${widget.quadtreeController.maxItems}'),
-                    Slider(
-                      min: 1,
-                      max: 100,
-                      divisions: 100,
-                      value: widget.quadtreeController.maxItems.toDouble(),
-                      onChanged: (value) {
-                        widget.quadtreeController.updateMaxItems(value.toInt());
-                      },
-                    ),
-                  ],
-                );
-              }),
-          ListenableBuilder(
-              listenable: widget.quadtreeController,
-              builder: (context, _) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Max Depth: ${widget.quadtreeController.maxDepth}'),
-                    Slider(
-                      min: 1,
-                      max: 30,
-                      divisions: 30,
-                      value: widget.quadtreeController.maxDepth.toDouble(),
-                      onChanged: (value) {
-                        widget.quadtreeController.updateMaxDepth(value.toInt());
-                      },
-                    ),
-                  ],
-                );
-              }),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Max Depth: ${widget.quadtreeController.maxDepth}'),
+              Slider(
+                min: 1,
+                max: 30,
+                divisions: 30,
+                value: widget.quadtreeController.maxDepth.toDouble(),
+                onChanged: (value) {
+                  widget.quadtreeController.updateMaxDepth(value.toInt());
+                },
+              ),
+            ],
+          ),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 12.0),
             child: Divider(),
@@ -331,37 +296,24 @@ class _ControlsState extends State<_Controls> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               ElevatedButton(
-                onPressed: () {
-                  final newObjWidth =
-                      widget.quadtreeController.quadrantWidth * 0.25;
-                  final newObjHeight =
-                      widget.quadtreeController.quadrantHeight * 0.25;
+                onPressed: () async {
+                  final double qX = await widget.quadtreeController.getX();
+                  final double qY = await widget.quadtreeController.getY();
+                  final double qW = await widget.quadtreeController.getWidth();
+                  final double qH = await widget.quadtreeController.getHeight();
 
-                  late final double qW;
-                  late final double qH;
-                  late final double qX;
-                  late final double qY;
-                  late final double x;
-                  late final double y;
-                  if (widget.quadtreeController.quadtree
-                      is VerticallyExpandableQuadtree) {
-                    final vQuadtree = widget.quadtreeController.quadtree
-                        as VerticallyExpandableQuadtree;
-                    qW = vQuadtree.nodeWidth;
-                    qH = vQuadtree.totalHeight;
-                    qX = vQuadtree.nodeX;
-                    qY = vQuadtree.yCoord;
+                  final newObjWidth = qW * 0.25;
+                  final newObjHeight = qH * 0.25;
+
+                  late double x;
+                  late double y;
+                  if (widget.quadtreeController.isVerticallyExpandable) {
                     // Y can be anywhere in the quadtree so randomize a big one
                     y = _r.nextDouble() * ((qY - qH) * 2) + (qY - qH);
                     // X must stay within the bounds of the quadtree (qW)
                     final maxX = qW - newObjWidth;
                     x = _r.nextDouble() * maxX;
                   } else {
-                    qW = widget.quadtreeController.quadtree.root.quadrant.width;
-                    qH =
-                        widget.quadtreeController.quadtree.root.quadrant.height;
-                    qX = widget.quadtreeController.quadtree.root.quadrant.x;
-                    qY = widget.quadtreeController.quadtree.root.quadrant.y;
                     x = _r.nextDouble() * ((qX - qW) * 16) + (qX - qW);
                     y = _r.nextDouble() * ((qY - qH) * 16) + (qY - qH);
                   }
@@ -443,10 +395,8 @@ class _ControlsState extends State<_Controls> {
                         timeToGetAllObjectsWithoutDuplicates = null;
                       });
                       final start = DateTime.now();
-                      await compute(
-                        _getAllObjectsWithoutDuplicates,
-                        widget.quadtreeController.quadtree,
-                      );
+                      await widget.quadtreeController
+                          .getAllObjectsWithoutDuplicates();
                       final end = DateTime.now();
                       setState(() {
                         isLoadingGetAllObjectsWithoutDuplicates = false;
@@ -472,10 +422,7 @@ class _ControlsState extends State<_Controls> {
                         timeToGetAllObjects = null;
                       });
                       final start = DateTime.now();
-                      await compute(
-                        _getAllObjects,
-                        widget.quadtreeController.quadtree,
-                      );
+                      await widget.quadtreeController.getAllObjects();
                       final end = DateTime.now();
                       setState(() {
                         isLoadingGetAllObjects = false;
@@ -500,10 +447,7 @@ class _ControlsState extends State<_Controls> {
                         timeToGetAllQuadrants = null;
                       });
                       final start = DateTime.now();
-                      await compute(
-                        _getAllQuadrants,
-                        widget.quadtreeController.quadtree,
-                      );
+                      await widget.quadtreeController.getAllQuadrants();
                       final end = DateTime.now();
                       setState(() {
                         isLoadingGetAllQuadrants = false;
@@ -528,24 +472,17 @@ class _ControlsState extends State<_Controls> {
                         isLoadingRetrieveObjects = true;
                         timeToRetrieveObjects = null;
                       });
-                      final width =
-                          widget.quadtreeController.quadrantWidth * 0.01;
-                      final height =
-                          widget.quadtreeController.quadrantHeight * 0.01;
-                      final x =
-                          widget.quadtreeController.quadrantWidth / 2 - width;
-                      final y =
-                          widget.quadtreeController.quadrantHeight / 2 - height;
+                      final qW = await widget.quadtreeController.getWidth();
+                      final qH = await widget.quadtreeController.getHeight();
+
+                      final width = qW * 0.01;
+                      final height = qH * 0.01;
+                      final x = qW / 2 - width;
+                      final y = qH / 2 - height;
                       final rect = Rect.fromLTWH(x, y, width, height);
 
                       final start = DateTime.now();
-                      await compute(
-                        _retrieveObjects,
-                        _RetrieveObjectsParams(
-                          widget.quadtreeController.quadtree,
-                          rect,
-                        ),
-                      );
+                      await widget.quadtreeController.retrieveObjects(rect);
                       final end = DateTime.now();
                       setState(() {
                         isLoadingRetrieveObjects = false;
@@ -569,34 +506,21 @@ class _ControlsState extends State<_Controls> {
   }
 }
 
-void _createObjectsAndAddToQuadtree({
+Future<void> _createObjectsAndAddToQuadtree({
   required BuildContext context,
   MyObject? myObject,
   int count = 1,
   required QuadtreeController quadtreeController,
   Offset? offset,
-}) {
+}) async {
   print('Adding $count objects');
-  bool valid = true;
-  for (var i = 0; i < count; i++) {
-    late final double qW;
-    late final double qH;
-    late final double qX;
-    late final double qY;
-    if (quadtreeController.quadtree is VerticallyExpandableQuadtree) {
-      final vQuadtree =
-          quadtreeController.quadtree as VerticallyExpandableQuadtree;
-      qW = vQuadtree.nodeWidth;
-      qH = vQuadtree.totalHeight;
-      qX = vQuadtree.nodeX;
-      qY = vQuadtree.yCoord;
-    } else {
-      qW = quadtreeController.quadtree.root.quadrant.width;
-      qH = quadtreeController.quadtree.root.quadrant.height;
-      qX = quadtreeController.quadtree.root.quadrant.x;
-      qY = quadtreeController.quadtree.root.quadrant.y;
-    }
+  final double qX = await quadtreeController.getX();
+  final double qY = await quadtreeController.getY();
+  final double qW = await quadtreeController.getWidth();
+  final double qH = await quadtreeController.getHeight();
 
+  List<MyObject> objects = [];
+  for (var i = 0; i < count; i++) {
     MyObject? obj = myObject;
     if (obj == null) {
       final width = _r.nextDouble() * (qW * 0.075) + (qW * 0.01);
@@ -616,44 +540,16 @@ void _createObjectsAndAddToQuadtree({
         height: height,
       );
     }
-    valid = quadtreeController.insertObject(obj);
+    objects.add(obj);
   }
+  final valid = await quadtreeController.insertAllObjects(objects);
+  print('Added ${objects.length} objects');
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(
         valid ? "Added $count objects" : "Failed to add $count objects",
       ),
       duration: const Duration(seconds: 2),
-    ),
-  );
-}
-
-List<MyObject> _getAllObjectsWithoutDuplicates(Quadtree<MyObject> quadtree) {
-  return quadtree.getAllItems(removeDuplicates: true);
-}
-
-List<MyObject> _getAllObjects(Quadtree<MyObject> quadtree) {
-  return quadtree.getAllItems(removeDuplicates: false);
-}
-
-List<Quadrant> _getAllQuadrants(Quadtree<MyObject> quadtree) {
-  return quadtree.getAllQuadrants();
-}
-
-class _RetrieveObjectsParams {
-  final Quadtree<MyObject> quadtree;
-  final Rect bounds;
-
-  _RetrieveObjectsParams(this.quadtree, this.bounds);
-}
-
-List<MyObject> _retrieveObjects(_RetrieveObjectsParams params) {
-  return params.quadtree.retrieve(
-    Quadrant(
-      x: params.bounds.left,
-      y: params.bounds.top,
-      width: params.bounds.width,
-      height: params.bounds.height,
     ),
   );
 }

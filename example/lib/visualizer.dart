@@ -17,25 +17,71 @@ class QuadtreeVisualizer extends StatelessWidget {
       listenable: quadtreeController,
       builder: (context, _) {
         return RepaintBoundary(
-          child: CustomPaint(
-            painter: QuadtreePainter(
-              quadtreeController: quadtreeController,
-              darkMode: Theme.of(context).brightness == Brightness.dark,
-            ),
-            child: Container(),
-          ),
+          child: _QuadtreeVisualizer(quadtreeController),
         );
       },
     );
   }
 }
 
-class QuadtreePainter extends CustomPainter {
+class _QuadtreeVisualizer extends StatefulWidget {
   final QuadtreeController quadtreeController;
+  const _QuadtreeVisualizer(this.quadtreeController);
+
+  @override
+  State<_QuadtreeVisualizer> createState() => __QuadtreeVisualizerState();
+}
+
+class __QuadtreeVisualizerState extends State<_QuadtreeVisualizer> {
+  Quadtree<MyObject>? quadtree;
+
+  @override
+  void initState() {
+    _loadQuadtree();
+    super.initState();
+  }
+
+  @override
+  void didUpdateWidget(_QuadtreeVisualizer oldWidget) {
+    _loadQuadtree();
+
+    super.didUpdateWidget(oldWidget);
+  }
+
+  Future<void> _loadQuadtree() async {
+    final quadtreeMap = await widget.quadtreeController.getQuadtreeMap();
+    quadtree = Quadtree<MyObject>.fromMap(
+      quadtreeMap,
+      (myObject) => myObject.bounds,
+      MyObject.fromMap,
+    );
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (quadtree == null) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    return CustomPaint(
+      painter: QuadtreePainter(
+        quadtree: quadtree!,
+        darkMode: Theme.of(context).brightness == Brightness.dark,
+      ),
+      child: Container(),
+    );
+  }
+}
+
+class QuadtreePainter extends CustomPainter {
+  final Quadtree<MyObject> quadtree;
   final bool darkMode;
 
   QuadtreePainter({
-    required this.quadtreeController,
+    required this.quadtree,
     this.darkMode = false,
   });
 
@@ -50,7 +96,6 @@ class QuadtreePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final startTime = DateTime.now();
     print('Repainting canvas $size at $startTime');
-    final quadtree = quadtreeController.quadtree;
     if (quadtree is VerticallyExpandableQuadtree) {
       _drawyVerticallyExpandableQuadtree(
           canvas, size, quadtree as VerticallyExpandableQuadtree<MyObject>);
