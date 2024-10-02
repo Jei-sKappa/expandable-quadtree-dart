@@ -14,7 +14,7 @@ class VerticallyExpandableQuadtree<T> extends QuadtreeDecorator<T>
 
   final Map<int, QuadtreeNode<T>> quadtreeNodes = {};
 
-  double get nodeHeight => super.root.quadrant.height;
+  double get _nodeHeight => super.root.quadrant.height;
   double get nodeWidth => super.root.quadrant.width;
   double get nodeX => super.root.quadrant.x;
 
@@ -22,13 +22,13 @@ class VerticallyExpandableQuadtree<T> extends QuadtreeDecorator<T>
   late double yCoord = super.root.quadrant.y;
 
   double get totalHeight =>
-      ((maxVerticalRow - minVerticalRow) + 1) * nodeHeight;
+      ((maxVerticalRow - minVerticalRow) + 1) * _nodeHeight;
 
   late int minVerticalRow = 0;
   late int maxVerticalRow = 0;
 
   // Helper to determine which vertical row the object belongs to
-  int _getVerticalRow(Rect bounds) => (bounds.top / nodeHeight).floor();
+  int _getVerticalRow(Rect bounds) => (bounds.top / _nodeHeight).floor();
 
   @override
   bool insert(T item) {
@@ -102,7 +102,7 @@ class VerticallyExpandableQuadtree<T> extends QuadtreeDecorator<T>
   }
 
   void _createNewQuadtreeNode(int verticalRow) {
-    final newY = verticalRow * nodeHeight;
+    final newY = verticalRow * _nodeHeight;
     print('Creating new quadtree node');
     print('  current y = $yCoord');
     print('  at y = $newY');
@@ -112,7 +112,7 @@ class VerticallyExpandableQuadtree<T> extends QuadtreeDecorator<T>
         x: nodeX,
         y: newY,
         width: nodeWidth,
-        height: nodeHeight,
+        height: _nodeHeight,
       ),
       tree: this,
     );
