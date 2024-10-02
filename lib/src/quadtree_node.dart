@@ -10,7 +10,7 @@ class QuadtreeNode<T> with EquatableMixin {
         _originalNegativeDepth = negativeDepth,
         items = [],
         nodes = {} {
-    tree._communicateNewNodeDepth(_originalDepth + negativeDepth);
+    tree.communicateNewNodeDepth(_originalDepth + negativeDepth);
   }
 
   factory QuadtreeNode.fromMap(
@@ -54,7 +54,7 @@ class QuadtreeNode<T> with EquatableMixin {
   final int _originalNegativeDepth;
 
   int get depth =>
-      _originalDepth + (tree._negativeDepth - _originalNegativeDepth);
+      _originalDepth + (tree.negativeDepth - _originalNegativeDepth);
 
   late final Quadtree<T> tree;
 
@@ -310,7 +310,7 @@ class QuadtreeNode<T> with EquatableMixin {
     final ne = QuadtreeNode<T>(
       quadrant.collapseTo(QuadrantLocation.ne),
       depth: nextDepth,
-      negativeDepth: tree._negativeDepth,
+      negativeDepth: tree.negativeDepth,
       tree: tree,
     );
 
@@ -318,7 +318,7 @@ class QuadtreeNode<T> with EquatableMixin {
     final nw = QuadtreeNode<T>(
       quadrant.collapseTo(QuadrantLocation.nw),
       depth: nextDepth,
-      negativeDepth: tree._negativeDepth,
+      negativeDepth: tree.negativeDepth,
       tree: tree,
     );
 
@@ -326,7 +326,7 @@ class QuadtreeNode<T> with EquatableMixin {
     final sw = QuadtreeNode<T>(
       quadrant.collapseTo(QuadrantLocation.sw),
       depth: nextDepth,
-      negativeDepth: tree._negativeDepth,
+      negativeDepth: tree.negativeDepth,
       tree: tree,
     );
 
@@ -334,7 +334,7 @@ class QuadtreeNode<T> with EquatableMixin {
     final se = QuadtreeNode<T>(
       quadrant.collapseTo(QuadrantLocation.se),
       depth: nextDepth,
-      negativeDepth: tree._negativeDepth,
+      negativeDepth: tree.negativeDepth,
       tree: tree,
     );
 

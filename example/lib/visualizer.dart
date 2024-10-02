@@ -96,44 +96,51 @@ class QuadtreePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final startTime = DateTime.now();
     print('Repainting canvas $size at $startTime');
+
+    // Scale the quadtree to the screen size, preserving aspect ratio
+    final double scaleX = size.width / quadtree.width;
+    final double scaleY = size.height / quadtree.height;
+    final double scale = scaleX < scaleY
+        ? scaleX
+        : scaleY; // Pick the smaller scale to fit in both dimensions
+
+    canvas.translate(-quadtree.left * scale, -quadtree.top * scale);
+
     if (quadtree is VerticallyExpandableQuadtree) {
       _drawyVerticallyExpandableQuadtree(
-          canvas, size, quadtree as VerticallyExpandableQuadtree<MyObject>);
+        canvas,
+        size,
+        quadtree as VerticallyExpandableQuadtree<MyObject>,
+        scale,
+      );
+    } else if (quadtree is SingleRootQuadtree) {
+      _drawSingleQuadtree(
+        canvas,
+        size,
+        quadtree as SingleRootQuadtree<MyObject>,
+        scale,
+      );
     } else {
-      _drawSingleQuadtree(canvas, size, quadtree);
+      throw Exception('Unknown quadtree type: ${quadtree.runtimeType}');
     }
+
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
     print('  Repaint duration: ${duration.inMilliseconds} ms');
-    print('-' * 75);
+    print('-_' * 75);
   }
 
   void _drawyVerticallyExpandableQuadtree(
     Canvas canvas,
     Size size,
     VerticallyExpandableQuadtree<MyObject> quadtree,
+    double scale,
   ) {
-    // 1. Retrieve all quadtree nodes from the vertically expandable quadtree
-    final quadtreeNodes = quadtree.quadtreeNodes;
-
-    // 2. Calculate the global bounds of the entire quadtree (spanning vertically)
-    final double totalHeight = quadtree.totalHeight;
-
-    final double nodeWidth = quadtree.nodeWidth;
-
-    // 3. Scale the quadtree to the screen size, preserving aspect ratio
-    final double scaleX = size.width / nodeWidth;
-    final double scaleY = size.height / totalHeight;
-    final double scale =
-        scaleX < scaleY ? scaleX : scaleY; // Ensure it fits in both dimensions
-
-    canvas.translate(-quadtree.nodeX * scale, -quadtree.yCoord * scale);
-
-    // 4. Iterate through all the quadtree nodes and draw each one
-    for (final node in quadtreeNodes.values) {
+    // Iterate through all the quadtree nodes and draw each one
+    for (final node in quadtree.quadtreeNodes.values) {
       // Translate canvas to draw each node
       final double left = (size.width - (node.quadrant.width * scale)) / 2;
-      final double top = (size.height - (totalHeight * scale)) / 2;
+      final double top = (size.height - (quadtree.height * scale)) / 2;
 
       // Draw the objects in the quadtree
       _drawObjects(canvas, quadtree, scale, left, top);
@@ -146,43 +153,31 @@ class QuadtreePainter extends CustomPainter {
   void _drawSingleQuadtree(
     Canvas canvas,
     Size size,
-    Quadtree<MyObject> quadtree,
+    SingleRootQuadtree<MyObject> quadtree,
+    double scale,
   ) {
-    final rootNode = quadtree.root;
-
-    // Scale the quadtree to the screen size, preserving aspect ratio
-    final double scaleX = size.width / rootNode.quadrant.width;
-    final double scaleY = size.height / rootNode.quadrant.height;
-    final double scale = scaleX < scaleY
-        ? scaleX
-        : scaleY; // Pick the smaller scale to fit in both dimensions
-
-    canvas.translate(
-        -rootNode.quadrant.x * scale, -rootNode.quadrant.y * scale);
-
-    // Calcola il posizionamento per centrare il quadtree
-    final double left = (size.width - (rootNode.quadrant.width * scale)) / 2;
-    final double top = (size.height - (rootNode.quadrant.height * scale)) / 2;
+    final double left = (size.width - (quadtree.width * scale)) / 2;
+    final double top = (size.height - (quadtree.height * scale)) / 2;
 
     // Draw the objects in the quadtree
     _drawObjects(canvas, quadtree, scale, left, top);
 
     // Draw the quadtree quadrants recursively
-    _drawQuadtreeNode(canvas, rootNode, scale, left, top);
+    _drawQuadtreeNode(canvas, quadtree.root, scale, left, top);
   }
 
   // Draw all quadrants recursively
   void _drawQuadtreeNode(
     Canvas canvas,
-    QuadtreeNode<MyObject> quadtree,
+    QuadtreeNode<MyObject> quadtreeNode,
     double scale,
     double left,
     double top,
   ) {
-    _drawQuadrant(canvas, quadtree.quadrant, scale, left, top);
+    _drawQuadrant(canvas, quadtreeNode.quadrant, scale, left, top);
 
-    if (quadtree.isNotLeaf) {
-      for (final child in quadtree.nodes.values) {
+    if (quadtreeNode.isNotLeaf) {
+      for (final child in quadtreeNode.nodes.values) {
         _drawQuadtreeNode(canvas, child, scale, left, top);
       }
     }

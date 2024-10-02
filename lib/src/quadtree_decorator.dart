@@ -19,6 +19,18 @@ class QuadtreeDecorator<T> with EquatableMixin implements Quadtree<T> {
       );
 
   @override
+  double get left => _quadtree.left;
+
+  @override
+  double get top => _quadtree.top;
+
+  @override
+  double get width => _quadtree.width;
+
+  @override
+  double get height => _quadtree.height;
+
+  @override
   int get depth => _quadtree.depth;
 
   @override
@@ -35,23 +47,14 @@ class QuadtreeDecorator<T> with EquatableMixin implements Quadtree<T> {
   Rect Function(T p1) get getBounds => _quadtree.getBounds;
 
   @override
-  int get lastUpdated => _quadtree.lastUpdated;
-
-  @override
   int get maxDepth => _quadtree.maxDepth;
 
   @override
   int get maxItems => _quadtree.maxItems;
 
   @override
-  QuadtreeNode<T> get root => _quadtree.root;
-
-  @override
-  set root(QuadtreeNode<T> root) => _quadtree.root = root;
-
-  @override
-  bool isRectOutOfOuterQuadrantBounds(Rect rect) =>
-      _quadtree.isRectOutOfOuterQuadrantBounds(rect);
+  void communicateNewNodeDepth(int newDepth) =>
+      _quadtree.communicateNewNodeDepth(newDepth);
 
   @override
   bool insert(T item) => _quadtree.insert(item);
@@ -86,22 +89,6 @@ class QuadtreeDecorator<T> with EquatableMixin implements Quadtree<T> {
 
   @override
   List<Object?> get props => [_quadtree];
-
-  @override
-  late int _depth = _quadtree._depth;
-
-  @override
-  late int _lastUpdated = _quadtree._lastUpdated;
-
-  @override
-  late int _negativeDepth = _quadtree._negativeDepth;
-
-  @override
-  void _communicateNewNodeDepth(int newDepth) =>
-      _quadtree._communicateNewNodeDepth(newDepth);
-
-  @override
-  void _updateLastUpdated() => _quadtree._updateLastUpdated();
 
   @override
   Map<String, dynamic> toMap(Map<String, dynamic> Function(T) toMapT) =>

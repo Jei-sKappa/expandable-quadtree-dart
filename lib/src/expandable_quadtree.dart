@@ -1,12 +1,38 @@
+import 'dart:ui';
+
 import 'package:equatable/equatable.dart';
+import 'package:fast_quadtree/src/extensions/is_rect_out_of_bounds_on_quadtree.dart';
 import 'package:fast_quadtree/src/helpers/calculate_quadrant_location_from_rect.dart';
+import 'package:fast_quadtree/src/quadrant.dart';
 import 'package:fast_quadtree/src/quadrant_location.dart';
 import 'package:fast_quadtree/src/quadtree.dart';
 import 'package:fast_quadtree/src/extensions/expand_quadrant.dart';
 import 'package:fast_quadtree/src/extensions/move_quadrant.dart';
 
-class ExpandableQuadtree<T> extends QuadtreeDecorator<T> with EquatableMixin {
-  ExpandableQuadtree(super._quadtree);
+class ExpandableQuadtree<T> extends SingleRootQuadtree<T> with EquatableMixin {
+  ExpandableQuadtree(
+    super.quadrant, {
+    required super.getBounds,
+    super.maxItems = 4,
+    super.maxDepth = 8,
+  });
+
+  factory ExpandableQuadtree.fromMap(
+    Map<String, dynamic> map,
+    Rect Function(T) getBounds,
+    T Function(Map<String, dynamic>) fromMapT,
+  ) {
+    final tree = ExpandableQuadtree(
+      Quadrant.fromMap(map['quadrant']),
+      maxItems: map['maxItems'] as int,
+      maxDepth: map['maxDepth'] as int,
+      getBounds: getBounds,
+    );
+    final List<Map<String, dynamic>> items = map['items'];
+    final List<T> itemsT = items.map(fromMapT).toList();
+    tree.insertAll(itemsT);
+    return tree;
+  }
 
   @override
   bool insert(T item) {
@@ -14,11 +40,20 @@ class ExpandableQuadtree<T> extends QuadtreeDecorator<T> with EquatableMixin {
     return super.insert(item);
   }
 
+  @override
+  Map<String, dynamic> toMap(Map<String, dynamic> Function(T) toMapT) => {
+        '_type': 'ExpandableQuadtree',
+        'quadrant': root.quadrant.toMap(),
+        'maxItems': maxItems,
+        'maxDepth': maxDepth,
+        'items': getAllItems(removeDuplicates: true).map(toMapT).toList(),
+      };
+
   void _maybeExpand(T item) {
     final bounds = getBounds(item);
 
     // Expand until the rect is within the outer quadrant bounds.
-    while (isRectOutOfOuterQuadrantBounds(bounds)) {
+    while (isRectOutOfBounds(bounds)) {
       final locs = calculateQuadrantLocationsFromRect(bounds, root.quadrant);
       _expand(locs.first);
     }

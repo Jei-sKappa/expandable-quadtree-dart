@@ -83,52 +83,47 @@ class QuadtreeController with ChangeNotifier {
 
       if (command == 'createQuadtree') {
         final data = message[2];
-        quadtree = Quadtree<MyObject>(
-          Quadrant(
-            x: data['quadrantX'],
-            y: data['quadrantY'],
-            width: data['quadrantWidth'],
-            height: data['quadrantHeight'],
-          ),
-          maxItems: data['maxItems'],
-          maxDepth: data['maxDepth'],
-          getBounds: (MyObject object) => object.bounds,
+        final quadrant = Quadrant(
+          x: data['quadrantX'],
+          y: data['quadrantY'],
+          width: data['quadrantWidth'],
+          height: data['quadrantHeight'],
         );
+        getBounds(MyObject object) => object.bounds;
+        if (data['isExpandable']) {
+          quadtree = ExpandableQuadtree<MyObject>(
+            quadrant,
+            maxItems: data['maxItems'],
+            maxDepth: data['maxDepth'],
+            getBounds: getBounds,
+          );
+        } else if (data['isVerticallyExpandable']) {
+          quadtree = VerticallyExpandableQuadtree<MyObject>(
+            quadrant,
+            maxItems: data['maxItems'],
+            maxDepth: data['maxDepth'],
+            getBounds: getBounds,
+          );
+        } else {
+          quadtree = Quadtree<MyObject>(
+            quadrant,
+            maxItems: data['maxItems'],
+            maxDepth: data['maxDepth'],
+            getBounds: getBounds,
+          );
+        }
 
         if (data['isCached']) {
           quadtree = CachedQuadtree<MyObject>(quadtree);
         }
-        if (data['isExpandable']) {
-          quadtree = ExpandableQuadtree<MyObject>(quadtree);
-        }
-        if (data['isVerticallyExpandable']) {
-          quadtree = VerticallyExpandableQuadtree<MyObject>(quadtree);
-        }
       } else if (command == 'getX') {
-        if (quadtree is VerticallyExpandableQuadtree) {
-          replyPort!.send((quadtree as VerticallyExpandableQuadtree).nodeX);
-        } else {
-          replyPort!.send(quadtree.root.quadrant.x);
-        }
+          replyPort!.send(quadtree.left);
       } else if (command == 'getY') {
-        if (quadtree is VerticallyExpandableQuadtree) {
-          replyPort!.send((quadtree as VerticallyExpandableQuadtree).yCoord);
-        } else {
-          replyPort!.send(quadtree.root.quadrant.y);
-        }
+        replyPort!.send(quadtree.top);
       } else if (command == 'getWidth') {
-        if (quadtree is VerticallyExpandableQuadtree) {
-          replyPort!.send((quadtree as VerticallyExpandableQuadtree).nodeWidth);
-        } else {
-          replyPort!.send(quadtree.root.quadrant.width);
-        }
+        replyPort!.send(quadtree.width);
       } else if (command == 'getHeight') {
-        if (quadtree is VerticallyExpandableQuadtree) {
-          replyPort!
-              .send((quadtree as VerticallyExpandableQuadtree).totalHeight);
-        } else {
-          replyPort!.send(quadtree.root.quadrant.height);
-        }
+        replyPort!.send(quadtree.height);
       } else if (command == 'getDepth') {
         replyPort!.send(quadtree.depth);
       } else if (command == 'insertObject') {

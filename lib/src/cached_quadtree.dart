@@ -23,7 +23,7 @@ class CachedQuadtree<T> extends QuadtreeDecorator<T> with EquatableMixin {
 
   @override
   bool insertAll(List<T> items) {
-    if(super.insertAll(items)) {
+    if (super.insertAll(items)) {
       _cachedItems.addAll(items);
       return true;
     }
@@ -62,15 +62,5 @@ class CachedQuadtree<T> extends QuadtreeDecorator<T> with EquatableMixin {
   void clear() {
     super.clear();
     _cachedItems.clear();
-  }
-
-  @override
-  Map<String, dynamic> toMap(Map<String, dynamic> Function(T) toMapT) {
-    return {
-      'quadrant': root.quadrant.toMap(),
-      'maxItems': maxItems,
-      'maxDepth': maxDepth,
-      'items': _cachedItems.map(toMapT).toList(),
-    };
   }
 }
