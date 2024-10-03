@@ -67,15 +67,17 @@ class VerticallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
     }
 
     // Determine the vertical row (key) based on the object's y-coordinate.
-    int verticalRow = _getVerticalRow(bounds);
+    final (:topRow, :bottomRow) = _getVerticalRows(bounds);
 
-    // If a quadtree for this row doesn't exist, create a new one.
-    if (!quadtreeNodes.containsKey(verticalRow)) {
-      _createNewQuadtreeNode(verticalRow);
+    for (int row = topRow; row <= bottomRow; row++) {
+      // If a quadtree for this row doesn't exist, create a new one.
+      if (!quadtreeNodes.containsKey(row)) {
+        _createNewQuadtreeNode(row);
+      }
+
+      // Insert the object into the appropriate quadtree node.
+      quadtreeNodes[row]!.insert(item);
     }
-
-    // Insert the object into the appropriate quadtree node.
-    quadtreeNodes[verticalRow]!.insert(item);
 
     return true;
   }
@@ -85,10 +87,12 @@ class VerticallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
     final bounds = getBounds(item);
 
     // Determine the vertical row (key) based on the object's y-coordinate.
-    int verticalRow = _getVerticalRow(bounds);
+    final (:topRow, :bottomRow) = _getVerticalRows(bounds);
 
-    if (quadtreeNodes.containsKey(verticalRow)) {
-      quadtreeNodes[verticalRow]!.remove(item);
+    for (int row = topRow; row <= bottomRow; row++) {
+      if (quadtreeNodes.containsKey(row)) {
+        quadtreeNodes[row]!.remove(item);
+      }
     }
   }
 
@@ -97,10 +101,12 @@ class VerticallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
     final bounds = getBounds(item);
 
     // Determine the vertical row (key) based on the object's y-coordinate.
-    int verticalRow = _getVerticalRow(bounds);
+    final (:topRow, :bottomRow) = _getVerticalRows(bounds);
 
-    if (quadtreeNodes.containsKey(verticalRow)) {
-      quadtreeNodes[verticalRow]!.localizedRemove(item);
+    for (int row = topRow; row <= bottomRow; row++) {
+      if (quadtreeNodes.containsKey(row)) {
+        quadtreeNodes[row]!.localizedRemove(item);
+      }
     }
   }
 
@@ -111,9 +117,7 @@ class VerticallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
     final quadrantBounds = quadrant.bounds;
 
     // Check which quadtree nodes the search bounds overlap with
-    final topRow = _getVerticalRow(quadrantBounds);
-    final bottomRow =
-        _getVerticalRow(quadrantBounds.translate(0, quadrantBounds.height));
+    final (:topRow, :bottomRow) = _getVerticalRows(quadrantBounds);
 
     for (int row = topRow; row <= bottomRow; row++) {
       if (quadtreeNodes.containsKey(row)) {
@@ -134,8 +138,10 @@ class VerticallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
       };
 
   // Helper to determine which vertical row the object belongs to
-  // TODO" It does not take into account the height of the object because it can also be placed in multiple rows.
-  int _getVerticalRow(Rect bounds) => (bounds.top / singleNodeHeight).floor();
+  ({int topRow, int bottomRow}) _getVerticalRows(Rect bounds) => (
+        topRow: (bounds.top / singleNodeHeight).floor(),
+        bottomRow: (bounds.bottom / singleNodeHeight).floor()
+      );
 
   void _createNewQuadtreeNode(int verticalRow) {
     final newTop = verticalRow * singleNodeHeight;

@@ -67,15 +67,17 @@ class HorizontallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
     }
 
     // Determine the horizontal column (key) based on the object's x-coordinate.
-    int horizontalColumn = _getHorizontalColumn(bounds);
+    final (:leftColumn, :rightColumn) = _getHorizontalColumns(bounds);
 
-    // If a quadtree for this column doesn't exist, create a new one.
-    if (!quadtreeNodes.containsKey(horizontalColumn)) {
-      _createNewQuadtreeNode(horizontalColumn);
+    for (int column = leftColumn; column <= rightColumn; column++) {
+      // If a quadtree for this column doesn't exist, create a new one.
+      if (!quadtreeNodes.containsKey(column)) {
+        _createNewQuadtreeNode(column);
+      }
+
+      // Insert the object into the appropriate quadtree node.
+      quadtreeNodes[column]!.insert(item);
     }
-
-    // Insert the object into the appropriate quadtree node.
-    quadtreeNodes[horizontalColumn]!.insert(item);
 
     return true;
   }
@@ -85,10 +87,12 @@ class HorizontallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
     final bounds = getBounds(item);
 
     // Determine the horizontal column (key) based on the object's x-coordinate.
-    int horizontalColumn = _getHorizontalColumn(bounds);
+    final (:leftColumn, :rightColumn) = _getHorizontalColumns(bounds);
 
-    if (quadtreeNodes.containsKey(horizontalColumn)) {
-      quadtreeNodes[horizontalColumn]!.remove(item);
+    for (int column = leftColumn; column <= rightColumn; column++) {
+      if (quadtreeNodes.containsKey(column)) {
+        quadtreeNodes[column]!.remove(item);
+      }
     }
   }
 
@@ -97,10 +101,12 @@ class HorizontallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
     final bounds = getBounds(item);
 
     // Determine the horizontal column (key) based on the object's x-coordinate.
-    int horizontalColumn = _getHorizontalColumn(bounds);
+    final (:leftColumn, :rightColumn) = _getHorizontalColumns(bounds);
 
-    if (quadtreeNodes.containsKey(horizontalColumn)) {
-      quadtreeNodes[horizontalColumn]!.localizedRemove(item);
+    for (int column = leftColumn; column <= rightColumn; column++) {
+      if (quadtreeNodes.containsKey(column)) {
+        quadtreeNodes[column]!.localizedRemove(item);
+      }
     }
   }
 
@@ -111,9 +117,7 @@ class HorizontallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
     final quadrantBounds = quadrant.bounds;
 
     // Check which quadtree nodes the search bounds overlap with
-    final leftColumn = _getHorizontalColumn(quadrantBounds);
-    final rightColumn =
-        _getHorizontalColumn(quadrantBounds.translate(quadrantBounds.width, 0));
+    final (:leftColumn, :rightColumn) = _getHorizontalColumns(quadrantBounds);
 
     for (int column = leftColumn; column <= rightColumn; column++) {
       if (quadtreeNodes.containsKey(column)) {
@@ -134,8 +138,10 @@ class HorizontallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
       };
 
   // Helper to determine which horizontal column the object belongs to
-  int _getHorizontalColumn(Rect bounds) =>
-      (bounds.left / singleNodeWidth).floor();
+  ({int leftColumn, int rightColumn}) _getHorizontalColumns(Rect bounds) => (
+        leftColumn: (bounds.left / singleNodeWidth).floor(),
+        rightColumn: (bounds.right / singleNodeWidth).floor(),
+      );
 
   void _createNewQuadtreeNode(int horizontalColumn) {
     final newLeft = horizontalColumn * singleNodeWidth;
