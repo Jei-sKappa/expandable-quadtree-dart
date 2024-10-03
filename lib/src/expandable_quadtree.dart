@@ -6,6 +6,7 @@ import 'package:fast_quadtree/src/helpers/calculate_quadrant_location_from_rect.
 import 'package:fast_quadtree/src/quadrant.dart';
 import 'package:fast_quadtree/src/quadrant_location.dart';
 import 'package:fast_quadtree/src/quadtree.dart';
+import 'package:fast_quadtree/src/single_root_quadtree.dart';
 import 'package:fast_quadtree/src/extensions/expand_quadrant.dart';
 import 'package:fast_quadtree/src/extensions/move_quadrant.dart';
 
