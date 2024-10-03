@@ -125,7 +125,7 @@ abstract class Quadtree<T> with EquatableMixin {
   ///
   /// Returns:
   ///   A list of [Quadrant] items representing all the quadrants in the quadtree.
-  List<Quadrant> getAllQuadrants();
+  List<Quadrant> getAllQuadrants({bool includeNonLeafNodes});
 
   /// Retrieves all items stored in the quadtree.
   ///

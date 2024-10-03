@@ -78,7 +78,8 @@ class QuadtreeDecorator<T> with EquatableMixin implements Quadtree<T> {
   List<T> retrieve(Quadrant quadrant) => _quadtree.retrieve(quadrant);
 
   @override
-  List<Quadrant> getAllQuadrants() => _quadtree.getAllQuadrants();
+  List<Quadrant> getAllQuadrants({bool includeNonLeafNodes = true}) =>
+      _quadtree.getAllQuadrants(includeNonLeafNodes: includeNonLeafNodes);
 
   @override
   List<T> getAllItems({bool removeDuplicates = true}) =>

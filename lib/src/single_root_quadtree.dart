@@ -135,7 +135,8 @@ class SingleRootQuadtree<T> with EquatableMixin implements Quadtree<T> {
   }
 
   @override
-  List<Quadrant> getAllQuadrants() => root.getAllQuadrants();
+  List<Quadrant> getAllQuadrants({bool includeNonLeafNodes = true}) =>
+      root.getAllQuadrants(includeNonLeafNodes: includeNonLeafNodes);
 
   @override
   List<T> getAllItems({bool removeDuplicates = true}) =>

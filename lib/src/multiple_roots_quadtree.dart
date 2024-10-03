@@ -90,11 +90,13 @@ abstract class MultipleRootsQuadtree<T>
   }
 
   @override
-  List<Quadrant> getAllQuadrants() {
+  List<Quadrant> getAllQuadrants({bool includeNonLeafNodes = true}) {
     List<Quadrant> results = [];
 
     for (final node in quadtreeNodes.values) {
-      results.addAll(node.getAllQuadrants());
+      results.addAll(
+        node.getAllQuadrants(includeNonLeafNodes: includeNonLeafNodes),
+      );
     }
 
     return results;
