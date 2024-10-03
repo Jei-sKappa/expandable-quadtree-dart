@@ -294,8 +294,8 @@ abstract class MultipleRootsQuadtree<T>
     implements Quadtree<T> {
   MultipleRootsQuadtree(
     Quadrant quadrant, {
-    required this.maxItems,
-    required this.maxDepth,
+    this.maxItems = 5,
+    this.maxDepth = 4,
     required this.getBounds,
   }) {
     quadtreeNodes[0] = QuadtreeNode<T>(

@@ -9,8 +9,8 @@ class VerticallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
     with EquatableMixin {
   VerticallyExpandableQuadtree(
     super.quadrant, {
-    required super.maxItems,
-    required super.maxDepth,
+    super.maxItems,
+    super.maxDepth,
     required super.getBounds,
   });
 
