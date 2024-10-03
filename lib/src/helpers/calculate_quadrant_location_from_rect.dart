@@ -21,25 +21,5 @@ List<QuadrantLocation> calculateQuadrantLocationsFromRect(
   if (startIsWest && endIsSouth) quadrants.add(QuadrantLocation.sw);
   if (endIsEast && endIsSouth) quadrants.add(QuadrantLocation.se);
 
-  if (quadrants.isEmpty) {
-    print('WARNING: QuadrantLocation is empty');
-    print('  bounds: $itemBounds');
-    print(
-        "    startIsNorth: ${itemBounds.topLeft.dy} < $yMidpoint = $startIsNorth");
-    print(
-        "    startIsWest: ${itemBounds.topLeft.dx} < $xMidpoint = $startIsWest");
-    print(
-        "    endIsEast: ${itemBounds.topLeft.dx + itemBounds.width} > $xMidpoint = $endIsEast");
-    print(
-        "    endIsSouth: ${itemBounds.topLeft.dy + itemBounds.height} > $yMidpoint = $endIsSouth");
-    print('      -');
-    print('      startIsNorth && endIsEast: ${startIsNorth && endIsEast}');
-    print('      startIsWest && startIsNorth: ${startIsWest && startIsNorth}');
-    print('      startIsWest && endIsSouth: ${startIsWest && endIsSouth}');
-    print('      endIsEast && endIsSouth: ${endIsEast && endIsSouth}');
-    print('-' * 50);
-    throw Exception('QuadrantLocation is empty');
-  }
-
   return quadrants;
 }
