@@ -4,6 +4,8 @@ import 'dart:ui';
 import 'package:equatable/equatable.dart';
 import 'package:fast_quadtree/src/expandable_quadtree.dart';
 import 'package:fast_quadtree/src/extensions/collapse_quadrant.dart';
+import 'package:fast_quadtree/src/extensions/is_inscribed_on_rect.dart';
+import 'package:fast_quadtree/src/extensions/loose_overlaps_on_rect.dart';
 import 'package:fast_quadtree/src/helpers/calculate_quadrant_location_from_rect.dart';
 import 'package:fast_quadtree/src/extensions/remove_duplicates.dart';
 import 'package:fast_quadtree/src/horizontally_expandable_quadtree.dart';

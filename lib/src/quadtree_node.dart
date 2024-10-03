@@ -172,12 +172,28 @@ class QuadtreeNode<T> with EquatableMixin {
     }
   }
 
-  /// Return all items that could collide with the given item, given
-  /// quadrant.
+  /// Return all items that overlaps with the given item, given quadrant.
   List<T> retrieve(Quadrant quadrant) {
-    final quadrantLocations =
-        calculateQuadrantLocationsFromRect(quadrant.bounds, this.quadrant);
-    final List<T> items = [...this.items];
+    // If the node's quadrant is completely contained within the given
+    // quadrant, return all items in the node.
+    if (this.quadrant.bounds.isInscribed(quadrant.bounds)) {
+      return getAllItems(removeDuplicates: true);
+    }
+
+    // The node's quadrant it's not fully contained within the given quadrant
+    // so we need to check if every item is contained within the given quadrant.
+
+    final List<T> items = [];
+    for (final item in this.items) {
+      if (quadrant.bounds.looseOverlaps(tree.getBounds(item))) {
+        items.add(item);
+      }
+    }
+
+    final quadrantLocations = calculateQuadrantLocationsFromRect(
+      quadrant.bounds,
+      this.quadrant,
+    );
 
     // Recursively retrieve items from subnodes in the relevant quadrants.
     if (nodes.isNotEmpty) {
@@ -194,75 +210,43 @@ class QuadtreeNode<T> with EquatableMixin {
   ///
   /// This method is a recursive function that traverses the entire quadtree
   /// structure and collects all quadrants into a single list.
-  ///
-  /// - Parameter quadtree: The quadtree from which to retrieve all quadrants.
-  /// - Returns: A list of all quadrants in the quadtree.
-  static List<Quadrant> getAllQuadrantsFromTreeNode<T>(
-    QuadtreeNode<T> quadtreeNode,
-  ) {
-    final List<Quadrant> nodes = [quadtreeNode.quadrant];
-
-    for (final node in quadtreeNode.nodes.values) {
-      nodes.addAll(getAllQuadrantsFromTreeNode(node));
-    }
-
-    return nodes;
-  }
-
-  /// Retrieves all quadrants from the given quadtree, including nested
-  /// quadrants.
-  ///
-  /// This method is a recursive function that traverses the entire quadtree
-  /// structure and collects all quadrants into a single list.
-  ///
-  /// - Returns: A list of all quadrants in the quadtree.
-  List<Quadrant> getAllQuadrants() => getAllQuadrantsFromTreeNode(this);
-
-  /// Retrieves all items from the quadtree, optionally removing duplicates.
-  ///
-  /// This method traverses the entire quadtree and collects all items into a
-  /// single list. If `removeDuplicates` is set to `true`, duplicate items will
-  /// be removed from the resulting list.
-  ///
-  /// Type Parameters:
-  /// - `T`: The type of items stored in the quadtree.
-  ///
   /// Parameters:
-  /// - `quadtree`: The root node of the quadtree from which to collect items.
-  /// - `removeDuplicates` (optional): A boolean flag indicating whether to
-  ///   remove duplicate items from the resulting list. Defaults to `true`.
-  ///
-  /// Returns:
-  /// A list containing all items from the quadtree, with duplicates removed if
-  /// `removeDuplicates` is `true`.
-  ///
-  /// Example:
-  /// ```dart
-  /// final quadtree = QuadtreeNode<int>();
-  /// // Add items to the quadtree...
-  /// final allItems = QuadtreeNode.getAllItemFromTree(quadtree);
-  /// ```
-  static List<T> getAllItemFromTree<T>(
-    QuadtreeNode<T> quadtreeNode, {
-    bool removeDuplicates = true,
-  }) {
-    final items = _getAllItemFromTree(quadtreeNode);
-
-    if (removeDuplicates) return items.removeDuplicates();
-
-    return items;
-  }
-
-  static List<T> _getAllItemFromTree<T>(QuadtreeNode<T> quadtreeNode) {
-    final List<T> items = [...quadtreeNode.items];
-
-    for (final node in quadtreeNode.nodes.values) {
-      items.addAll(
-        _getAllItemFromTree(node),
-      );
+  /// - `includeNonLeafNodes` (optional): A boolean flag indicating whether to
+  /// include non-leaf nodes in the resulting list. Defaults to `true`.
+  /// 
+  /// Returns: A list of all quadrants in the quadtree.
+  List<Quadrant> getAllQuadrants({bool includeNonLeafNodes = true}) {
+    if (includeNonLeafNodes) {
+      return _getAllQuadrants();
     }
 
-    return items;
+    return _getAllQuadrantOnLeafNodes();
+  }
+
+  List<Quadrant> _getAllQuadrants() {
+    final List<Quadrant> quadrants = [quadrant];
+
+    for (final node in nodes.values) {
+      quadrants.addAll(node._getAllQuadrants());
+    }
+
+    return quadrants;
+  }
+
+  List<Quadrant> _getAllQuadrantOnLeafNodes() {
+    final List<Quadrant> quadrants = [];
+
+    if (isLeaf) {
+      quadrants.add(quadrant);
+    }
+
+    // Node is not a leaf node
+
+    for (final node in nodes.values) {
+      quadrants.addAll(node._getAllQuadrantOnLeafNodes());
+    }
+
+    return quadrants;
   }
 
   /// Retrieves all items from the quadtree, optionally removing duplicates.
@@ -288,8 +272,23 @@ class QuadtreeNode<T> with EquatableMixin {
   /// // Add items to the quadtree...
   /// final allItems = quadtree.getAllItem();
   /// ```
-  List<T> getAllItems({bool removeDuplicates = true}) =>
-      getAllItemFromTree(this, removeDuplicates: removeDuplicates);
+  List<T> getAllItems({bool removeDuplicates = true}) {
+    final items = _getAllItems();
+
+    if (removeDuplicates) return items.removeDuplicates();
+
+    return items;
+  }
+
+  List<T> _getAllItems() {
+    final List<T> items = [...this.items];
+
+    for (final node in nodes.values) {
+      items.addAll(node._getAllItems());
+    }
+
+    return items;
+  }
 
   /// Clear the [Quadtree]
   void clear() {
