@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:equatable/equatable.dart';
+import 'package:fast_quadtree/src/extensions/remove_duplicates.dart';
 import 'package:fast_quadtree/src/quadrant.dart';
 import 'package:fast_quadtree/src/quadtree.dart';
 
@@ -104,13 +105,21 @@ abstract class MultipleRootsQuadtree<T>
 
   @override
   List<T> getAllItems({bool removeDuplicates = true}) {
-    List<T> results = [];
+    final items = _getAllItems();
+
+    if (removeDuplicates) return items.removeDuplicates();
+
+    return items;
+  }
+
+  List<T> _getAllItems() {
+    final items = <T>[];
 
     for (final node in quadtreeNodes.values) {
-      results.addAll(node.getAllItems(removeDuplicates: removeDuplicates));
+      items.addAll(node.getAllItems(removeDuplicates: false));
     }
 
-    return results;
+    return items;
   }
 
   @override
