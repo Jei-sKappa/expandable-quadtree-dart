@@ -55,6 +55,9 @@ class SingleRootQuadtree<T> with EquatableMixin implements Quadtree<T> {
   double get height => root.quadrant.height;
 
   @override
+  Rect get quadrant => Rect.fromLTWH(left, top, width, height);
+
+  @override
   final Rect Function(T) getBounds;
 
   int _depth = 0;

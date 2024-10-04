@@ -1,22 +1,9 @@
 part of 'quadtree.dart';
 
-class QuadtreeDecorator<T> with EquatableMixin implements Quadtree<T> {
+abstract class QuadtreeDecorator<T> with EquatableMixin implements Quadtree<T> {
   final Quadtree<T> _quadtree;
 
   QuadtreeDecorator(this._quadtree);
-
-  factory QuadtreeDecorator.fromMap(
-    Map<String, dynamic> map,
-    Rect Function(T) getBounds,
-    T Function(Map<String, dynamic>) fromMapT,
-  ) =>
-      QuadtreeDecorator(
-        Quadtree.fromMap(
-          map,
-          getBounds,
-          fromMapT,
-        ),
-      );
 
   @override
   double get left => _quadtree.left;
@@ -29,6 +16,9 @@ class QuadtreeDecorator<T> with EquatableMixin implements Quadtree<T> {
 
   @override
   double get height => _quadtree.height;
+
+  @override
+  Rect get quadrant => Rect.fromLTWH(left, top, width, height);
 
   @override
   int get depth => _quadtree.depth;

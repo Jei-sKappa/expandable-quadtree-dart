@@ -40,6 +40,9 @@ abstract class MultipleRootsQuadtree<T>
   double get height => firstNode.quadrant.height;
 
   @override
+  Rect get quadrant => Rect.fromLTWH(left, top, width, height);
+
+  @override
   final Rect Function(T) getBounds;
 
   int _depth = 0;

@@ -58,6 +58,8 @@ abstract class Quadtree<T> with EquatableMixin {
 
   double get height;
 
+  Rect get quadrant;
+
   Rect Function(T) get getBounds;
 
   /// The maximum depth reached in the quadtree.
