@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:equatable/equatable.dart';
+import 'package:fast_quadtree/src/cached_quadtree.dart';
 import 'package:fast_quadtree/src/expandable_quadtree.dart';
 import 'package:fast_quadtree/src/extensions/collapse_quadrant.dart';
 import 'package:fast_quadtree/src/extensions/is_inscribed_on_rect.dart';
@@ -33,6 +34,8 @@ abstract class Quadtree<T> with EquatableMixin {
   ) {
     final type = map['_type'] as String;
     switch (type) {
+      case 'CachedQuadtree':
+        return CachedQuadtree.fromMap(map, getBounds, fromMapT);
       case 'SingleRootQuadtree':
         return SingleRootQuadtree.fromMap(map, getBounds, fromMapT);
       case 'ExpandableQuadtree':

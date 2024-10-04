@@ -1,20 +1,40 @@
+import 'dart:ui';
+
 import 'package:equatable/equatable.dart';
 import 'package:fast_quadtree/src/quadtree.dart';
+import 'package:meta/meta.dart';
 
 class CachedQuadtree<T> extends QuadtreeDecorator<T> with EquatableMixin {
-  CachedQuadtree(super._quadtree);
+  CachedQuadtree(super.decoratedQuadtree);
 
-  final List<T> _cachedItems = [];
+  factory CachedQuadtree.fromMap(
+    Map<String, dynamic> map,
+    Rect Function(T) getBounds,
+    T Function(Map<String, dynamic>) fromMapT,
+  ) {
+    final decoratedQuadtreeMap =
+        map['decoratedQuadtree'] as Map<String, dynamic>;
 
-  List<T> get cachedItems => _cachedItems;
+    final decoratedQuadtree = Quadtree.fromMap(
+      decoratedQuadtreeMap,
+      getBounds,
+      fromMapT,
+    );
 
-  @override
-  List<Object?> get props => [...super.props, _cachedItems];
+    final tree = CachedQuadtree(decoratedQuadtree);
+    for (final itemMap in decoratedQuadtreeMap['items']) {
+      tree.cachedItems.add(fromMapT(itemMap));
+    }
+    return tree;
+  }
+
+  @visibleForTesting
+  final List<T> cachedItems = [];
 
   @override
   bool insert(T item) {
     if (super.insert(item)) {
-      _cachedItems.add(item);
+      cachedItems.add(item);
       return true;
     }
 
@@ -24,7 +44,7 @@ class CachedQuadtree<T> extends QuadtreeDecorator<T> with EquatableMixin {
   @override
   bool insertAll(List<T> items) {
     if (super.insertAll(items)) {
-      _cachedItems.addAll(items);
+      cachedItems.addAll(items);
       return true;
     }
 
@@ -34,33 +54,42 @@ class CachedQuadtree<T> extends QuadtreeDecorator<T> with EquatableMixin {
   @override
   void remove(T item) {
     super.remove(item);
-    _cachedItems.remove(item);
+    cachedItems.remove(item);
   }
 
   @override
   void removeAll(List<T> items) {
     super.removeAll(items);
-    _cachedItems.removeWhere((element) => items.contains(element));
+    cachedItems.removeWhere((element) => items.contains(element));
   }
 
   @override
   void localizedRemove(T item) {
     super.localizedRemove(item);
-    _cachedItems.remove(item);
+    cachedItems.remove(item);
   }
 
   @override
   void localizedRemoveAll(List<T> items) {
     super.localizedRemoveAll(items);
-    _cachedItems.removeWhere((element) => items.contains(element));
+    cachedItems.removeWhere((element) => items.contains(element));
   }
 
   @override
-  List<T> getAllItems({bool removeDuplicates = true}) => _cachedItems;
+  List<T> getAllItems({bool removeDuplicates = true}) => cachedItems;
 
   @override
   void clear() {
     super.clear();
-    _cachedItems.clear();
+    cachedItems.clear();
+  }
+
+  @override
+  Map<String, dynamic> toMap(Map<String, dynamic> Function(T) toMapT) {
+    final decoratedQuadtreeMap = decoratedQuadtreeToMap(toMapT);
+    return {
+      '_type': 'CachedQuadtree',
+      'decoratedQuadtree': decoratedQuadtreeMap,
+    };
   }
 }

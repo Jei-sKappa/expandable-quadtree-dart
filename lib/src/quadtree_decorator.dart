@@ -1,87 +1,96 @@
 part of 'quadtree.dart';
 
 abstract class QuadtreeDecorator<T> with EquatableMixin implements Quadtree<T> {
-  final Quadtree<T> _quadtree;
+  QuadtreeDecorator(this.decoratedQuadtree);
 
-  QuadtreeDecorator(this._quadtree);
-
-  @override
-  double get left => _quadtree.left;
+  @visibleForTesting
+  final Quadtree<T> decoratedQuadtree;
 
   @override
-  double get top => _quadtree.top;
+  double get left => decoratedQuadtree.left;
 
   @override
-  double get width => _quadtree.width;
+  double get top => decoratedQuadtree.top;
 
   @override
-  double get height => _quadtree.height;
+  double get width => decoratedQuadtree.width;
+
+  @override
+  double get height => decoratedQuadtree.height;
 
   @override
   Rect get quadrant => Rect.fromLTWH(left, top, width, height);
 
   @override
-  int get depth => _quadtree.depth;
+  int get depth => decoratedQuadtree.depth;
 
   @override
-  set depth(int newDepth) => _quadtree.depth = newDepth;
+  set depth(int newDepth) => decoratedQuadtree.depth = newDepth;
 
   @override
-  int get negativeDepth => _quadtree.negativeDepth;
+  int get negativeDepth => decoratedQuadtree.negativeDepth;
 
   @override
   set negativeDepth(int newNegativeDepth) =>
-      _quadtree.negativeDepth = newNegativeDepth;
+      decoratedQuadtree.negativeDepth = newNegativeDepth;
 
   @override
-  Rect Function(T p1) get getBounds => _quadtree.getBounds;
+  Rect Function(T p1) get getBounds => decoratedQuadtree.getBounds;
 
   @override
-  int get maxDepth => _quadtree.maxDepth;
+  int get maxDepth => decoratedQuadtree.maxDepth;
 
   @override
-  int get maxItems => _quadtree.maxItems;
+  int get maxItems => decoratedQuadtree.maxItems;
 
   @override
   void communicateNewNodeDepth(int newDepth) =>
-      _quadtree.communicateNewNodeDepth(newDepth);
+      decoratedQuadtree.communicateNewNodeDepth(newDepth);
 
   @override
-  bool insert(T item) => _quadtree.insert(item);
+  bool insert(T item) => decoratedQuadtree.insert(item);
 
   @override
-  bool insertAll(List<T> items) => _quadtree.insertAll(items);
+  bool insertAll(List<T> items) => decoratedQuadtree.insertAll(items);
 
   @override
-  void remove(T item) => _quadtree.remove(item);
+  void remove(T item) => decoratedQuadtree.remove(item);
 
   @override
-  void removeAll(List<T> items) => _quadtree.removeAll(items);
+  void removeAll(List<T> items) => decoratedQuadtree.removeAll(items);
 
   @override
-  void localizedRemove(T item) => _quadtree.localizedRemove(item);
+  void localizedRemove(T item) => decoratedQuadtree.localizedRemove(item);
 
   @override
-  void localizedRemoveAll(List<T> items) => _quadtree.localizedRemoveAll(items);
+  void localizedRemoveAll(List<T> items) =>
+      decoratedQuadtree.localizedRemoveAll(items);
 
   @override
-  List<T> retrieve(Quadrant quadrant) => _quadtree.retrieve(quadrant);
+  List<T> retrieve(Quadrant quadrant) => decoratedQuadtree.retrieve(quadrant);
 
   @override
   List<Quadrant> getAllQuadrants({bool includeNonLeafNodes = true}) =>
-      _quadtree.getAllQuadrants(includeNonLeafNodes: includeNonLeafNodes);
+      decoratedQuadtree.getAllQuadrants(
+          includeNonLeafNodes: includeNonLeafNodes);
 
   @override
   List<T> getAllItems({bool removeDuplicates = true}) =>
-      _quadtree.getAllItems(removeDuplicates: removeDuplicates);
+      decoratedQuadtree.getAllItems(removeDuplicates: removeDuplicates);
 
   @override
-  void clear() => _quadtree.clear();
+  void clear() => decoratedQuadtree.clear();
 
   @override
-  List<Object?> get props => [_quadtree];
+  List<Object?> get props => [decoratedQuadtree];
 
   @override
   Map<String, dynamic> toMap(Map<String, dynamic> Function(T) toMapT) =>
-      _quadtree.toMap(toMapT);
+      decoratedQuadtree.toMap(toMapT);
+
+  @protected
+  Map<String, dynamic> decoratedQuadtreeToMap(
+    Map<String, dynamic> Function(T) toMapT,
+  ) =>
+      decoratedQuadtree.toMap(toMapT);
 }
