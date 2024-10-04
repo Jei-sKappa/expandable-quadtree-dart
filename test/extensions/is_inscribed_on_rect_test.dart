@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:fast_quadtree/src/extensions/is_inscribed_on_rect.dart';
+import 'package:expandable_quadtree/src/extensions/is_inscribed_on_rect.dart';
 import 'dart:ui';
 
 void main() {

@@ -1,7 +1,7 @@
 import 'dart:ui';
 
-import 'package:fast_quadtree/src/helpers/calculate_quadrant_location_from_rect.dart';
-import 'package:fast_quadtree/src/quadrant_location.dart';
+import 'package:expandable_quadtree/src/helpers/calculate_quadrant_location_from_rect.dart';
+import 'package:expandable_quadtree/src/quadrant_location.dart';
 import 'package:test/test.dart';
 
 void main() {

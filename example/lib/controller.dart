@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:isolate';
 import 'package:example/model/my_object.dart';
-import 'package:fast_quadtree/fast_quadtree.dart';
+import 'package:expandable_quadtree/expandable_quadtree.dart';
 import 'package:flutter/material.dart';
 
 const _encoder = JsonEncoder.withIndent('  ');

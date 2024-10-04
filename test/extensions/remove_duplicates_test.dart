@@ -1,4 +1,4 @@
-import 'package:fast_quadtree/src/extensions/remove_duplicates.dart';
+import 'package:expandable_quadtree/src/extensions/remove_duplicates.dart';
 import 'package:test/test.dart';
 
 void main() {

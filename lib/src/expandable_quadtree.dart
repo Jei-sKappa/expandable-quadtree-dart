@@ -1,15 +1,15 @@
 import 'dart:ui';
 
 import 'package:equatable/equatable.dart';
-import 'package:fast_quadtree/src/extensions/is_rect_out_of_bounds_on_quadtree.dart';
-import 'package:fast_quadtree/src/extensions/to_map_on_rect.dart';
-import 'package:fast_quadtree/src/helpers/calculate_quadrant_location_from_rect.dart';
-import 'package:fast_quadtree/src/helpers/rect_mapper.dart';
-import 'package:fast_quadtree/src/quadrant_location.dart';
-import 'package:fast_quadtree/src/quadtree.dart';
-import 'package:fast_quadtree/src/single_root_quadtree.dart';
-import 'package:fast_quadtree/src/extensions/expand_rect.dart';
-import 'package:fast_quadtree/src/extensions/move_rect.dart';
+import 'package:expandable_quadtree/src/extensions/is_rect_out_of_bounds_on_quadtree.dart';
+import 'package:expandable_quadtree/src/extensions/to_map_on_rect.dart';
+import 'package:expandable_quadtree/src/helpers/calculate_quadrant_location_from_rect.dart';
+import 'package:expandable_quadtree/src/helpers/rect_mapper.dart';
+import 'package:expandable_quadtree/src/quadrant_location.dart';
+import 'package:expandable_quadtree/src/quadtree.dart';
+import 'package:expandable_quadtree/src/single_root_quadtree.dart';
+import 'package:expandable_quadtree/src/extensions/expand_rect.dart';
+import 'package:expandable_quadtree/src/extensions/move_rect.dart';
 
 class ExpandableQuadtree<T> extends SingleRootQuadtree<T> with EquatableMixin {
   ExpandableQuadtree(

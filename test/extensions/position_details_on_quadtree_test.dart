@@ -1,8 +1,8 @@
 import 'dart:ui';
 
-import 'package:fast_quadtree/fast_quadtree.dart';
+import 'package:expandable_quadtree/expandable_quadtree.dart';
 import 'package:test/test.dart';
-import 'package:fast_quadtree/src/extensions/position_details_on_quadtree.dart';
+import 'package:expandable_quadtree/src/extensions/position_details_on_quadtree.dart';
 
 void main() {
   final quadrant = Rect.fromLTWH(-100, -100, 100, 100);

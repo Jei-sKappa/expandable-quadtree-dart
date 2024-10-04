@@ -2,10 +2,10 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:equatable/equatable.dart';
-import 'package:fast_quadtree/src/extensions/is_rect_out_of_bounds_on_quadtree.dart';
-import 'package:fast_quadtree/src/extensions/to_map_on_rect.dart';
-import 'package:fast_quadtree/src/helpers/rect_mapper.dart';
-import 'package:fast_quadtree/src/quadtree.dart';
+import 'package:expandable_quadtree/src/extensions/is_rect_out_of_bounds_on_quadtree.dart';
+import 'package:expandable_quadtree/src/extensions/to_map_on_rect.dart';
+import 'package:expandable_quadtree/src/helpers/rect_mapper.dart';
+import 'package:expandable_quadtree/src/quadtree.dart';
 
 class SingleRootQuadtree<T> with EquatableMixin implements Quadtree<T> {
   SingleRootQuadtree(

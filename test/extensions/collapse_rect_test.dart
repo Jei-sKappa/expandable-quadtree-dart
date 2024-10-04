@@ -1,7 +1,7 @@
 import 'dart:ui';
 
-import 'package:fast_quadtree/fast_quadtree.dart';
-import 'package:fast_quadtree/src/extensions/collapse_rect.dart';
+import 'package:expandable_quadtree/expandable_quadtree.dart';
+import 'package:expandable_quadtree/src/extensions/collapse_rect.dart';
 import 'package:test/test.dart';
 
 void main() {

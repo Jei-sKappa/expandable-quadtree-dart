@@ -2,11 +2,11 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:equatable/equatable.dart';
-import 'package:fast_quadtree/fast_quadtree.dart';
-import 'package:fast_quadtree/src/extensions/copy_with_on_rect.dart';
-import 'package:fast_quadtree/src/extensions/position_details_on_quadtree.dart';
-import 'package:fast_quadtree/src/extensions/to_map_on_rect.dart';
-import 'package:fast_quadtree/src/helpers/rect_mapper.dart';
+import 'package:expandable_quadtree/expandable_quadtree.dart';
+import 'package:expandable_quadtree/src/extensions/copy_with_on_rect.dart';
+import 'package:expandable_quadtree/src/extensions/position_details_on_quadtree.dart';
+import 'package:expandable_quadtree/src/extensions/to_map_on_rect.dart';
+import 'package:expandable_quadtree/src/helpers/rect_mapper.dart';
 
 class HorizontallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
     with EquatableMixin {

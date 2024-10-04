@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:fast_quadtree/src/quadrant_location.dart';
+import 'package:expandable_quadtree/src/quadrant_location.dart';
 
 void main() {
   group('QuadrantLocation', () {

@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:equatable/equatable.dart';
-import 'package:fast_quadtree/src/quadtree.dart';
+import 'package:expandable_quadtree/src/quadtree.dart';
 import 'package:meta/meta.dart';
 
 class CachedQuadtree<T> extends QuadtreeDecorator<T> with EquatableMixin {

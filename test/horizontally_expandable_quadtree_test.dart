@@ -1,8 +1,8 @@
 import 'package:collection/collection.dart';
-import 'package:fast_quadtree/src/extensions/loose_overlaps_on_rect.dart';
-import 'package:fast_quadtree/src/extensions/to_map_on_rect.dart';
-import 'package:fast_quadtree/src/helpers/rect_mapper.dart';
-import 'package:fast_quadtree/src/horizontally_expandable_quadtree.dart';
+import 'package:expandable_quadtree/src/extensions/loose_overlaps_on_rect.dart';
+import 'package:expandable_quadtree/src/extensions/to_map_on_rect.dart';
+import 'package:expandable_quadtree/src/helpers/rect_mapper.dart';
+import 'package:expandable_quadtree/src/horizontally_expandable_quadtree.dart';
 import 'package:test/test.dart';
 import 'dart:ui';
 

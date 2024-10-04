@@ -1,5 +1,5 @@
 import 'dart:ui';
-import 'package:fast_quadtree/src/extensions/loose_overlaps_on_rect.dart';
+import 'package:expandable_quadtree/src/extensions/loose_overlaps_on_rect.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -16,13 +16,15 @@ void main() {
       expect(rect1.looseOverlaps(rect2), isTrue);
     });
 
-    test('rectangles positioned side by side horizontally should return true', () {
+    test('rectangles positioned side by side horizontally should return true',
+        () {
       final rect1 = Rect.fromLTWH(0, 0, 10, 10);
       final rect2 = Rect.fromLTWH(10, 0, 10, 10);
       expect(rect1.looseOverlaps(rect2), isTrue);
     });
 
-    test('rectangles positioned side by side vertically should return true', () {
+    test('rectangles positioned side by side vertically should return true',
+        () {
       final rect1 = Rect.fromLTWH(0, 0, 10, 10);
       final rect2 = Rect.fromLTWH(0, 10, 10, 10);
       expect(rect1.looseOverlaps(rect2), isTrue);

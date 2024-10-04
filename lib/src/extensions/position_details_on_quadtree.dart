@@ -1,4 +1,4 @@
-import 'package:fast_quadtree/src/quadtree.dart';
+import 'package:expandable_quadtree/src/quadtree.dart';
 
 extension PositionDetails<T> on Quadtree<T> {
   double get right => left + width;

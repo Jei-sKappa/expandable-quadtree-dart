@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:fast_quadtree/src/quadrant_location.dart';
+import 'package:expandable_quadtree/src/quadrant_location.dart';
 
 extension MoveRect on Rect {
   Rect moveTo(QuadrantLocation from, QuadrantLocation to) {

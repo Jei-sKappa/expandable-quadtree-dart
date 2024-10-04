@@ -2,8 +2,8 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:equatable/equatable.dart';
-import 'package:fast_quadtree/src/extensions/remove_duplicates.dart';
-import 'package:fast_quadtree/src/quadtree.dart';
+import 'package:expandable_quadtree/src/extensions/remove_duplicates.dart';
+import 'package:expandable_quadtree/src/quadtree.dart';
 
 abstract class MultipleRootsQuadtree<T>
     with EquatableMixin

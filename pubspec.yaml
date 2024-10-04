@@ -1,4 +1,4 @@
-name: fast_quadtree
+name: expandable_quadtree
 description: A Dart package for creating and interacting with a quadtree data structure.
 version: 0.0.1
 # repository: https://github.com/my_org/my_repo

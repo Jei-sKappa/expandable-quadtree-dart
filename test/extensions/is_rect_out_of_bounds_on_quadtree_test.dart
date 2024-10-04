@@ -1,7 +1,7 @@
 import 'dart:ui';
-import 'package:fast_quadtree/fast_quadtree.dart';
+import 'package:expandable_quadtree/expandable_quadtree.dart';
 import 'package:test/test.dart';
-import 'package:fast_quadtree/src/extensions/is_rect_out_of_bounds_on_quadtree.dart';
+import 'package:expandable_quadtree/src/extensions/is_rect_out_of_bounds_on_quadtree.dart';
 
 void main() {
   group('SingleRootQuadtree IsRectOutOfBounds', () {
