@@ -221,8 +221,8 @@ class _ControlsState extends State<_Controls> {
   bool isLoadingGetAllObjects = false;
   Duration? timeToGetAllObjectsWithoutDuplicates;
   bool isLoadingGetAllObjectsWithoutDuplicates = false;
-  Duration? timeToGetAllQuadrants;
-  bool isLoadingGetAllQuadrants = false;
+  Duration? timeToGetAllRects;
+  bool isLoadingGetAllRects = false;
 
   @override
   void initState() {
@@ -255,7 +255,7 @@ class _ControlsState extends State<_Controls> {
       child: Column(
         children: [
           Text(
-            'Quadrant Size: ${quadrantWidth ?? '?'} x ${quadrantHeight ?? '?'}',
+            'Rect Size: ${quadrantWidth ?? '?'} x ${quadrantHeight ?? '?'}',
           ),
           Text('Number of Objects: ${nItems ?? '?'}'),
           Text('Current depth: ${depth ?? '?'}'),
@@ -451,24 +451,23 @@ class _ControlsState extends State<_Controls> {
                   ElevatedButton(
                     onPressed: () async {
                       setState(() {
-                        isLoadingGetAllQuadrants = true;
-                        timeToGetAllQuadrants = null;
+                        isLoadingGetAllRects = true;
+                        timeToGetAllRects = null;
                       });
                       final start = DateTime.now();
                       await widget.quadtreeController.getAllQuadrants();
                       final end = DateTime.now();
                       setState(() {
-                        isLoadingGetAllQuadrants = false;
-                        timeToGetAllQuadrants = end.difference(start);
+                        isLoadingGetAllRects = false;
+                        timeToGetAllRects = end.difference(start);
                       });
                     },
                     child: const Text('Get all quadrants'),
                   ),
-                  if (isLoadingGetAllQuadrants)
+                  if (isLoadingGetAllRects)
                     const CircularProgressIndicator.adaptive(),
-                  if (timeToGetAllQuadrants != null)
-                    Text(
-                        'Time taken: ${timeToGetAllQuadrants!.inMilliseconds}ms'),
+                  if (timeToGetAllRects != null)
+                    Text('Time taken: ${timeToGetAllRects!.inMilliseconds}ms'),
                 ],
               ),
               // Retrieve Objects

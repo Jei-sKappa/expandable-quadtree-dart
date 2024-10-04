@@ -1,15 +1,16 @@
 import 'package:collection/collection.dart';
 import 'package:fast_quadtree/src/extensions/loose_overlaps_on_rect.dart';
+import 'package:fast_quadtree/src/extensions/to_map_on_rect.dart';
+import 'package:fast_quadtree/src/helpers/rect_mapper.dart';
 import 'package:test/test.dart';
 import 'package:fast_quadtree/src/single_root_quadtree.dart';
-import 'package:fast_quadtree/src/quadrant.dart';
 import 'dart:ui';
 
 void main() {
   group('SingleRootQuadtree', () {
     final deepListEquality = const DeepCollectionEquality.unordered().equals;
 
-    final quadrant = Quadrant(x: 0, y: 0, width: 100, height: 100);
+    final quadrant = Rect.fromLTWH(0, 0, 100, 100);
 
     // NW subnode
     final nwRect = Rect.fromLTWH(10, 10, 1, 1);
@@ -19,18 +20,6 @@ void main() {
     final senwRect = Rect.fromLTWH(60, 60, 1, 1);
 
     Rect getBounds(Rect rect) => rect;
-    Rect fromMapT(Map<String, dynamic> map) => Rect.fromLTWH(
-          map['left'] as double,
-          map['top'] as double,
-          map['width'] as double,
-          map['height'] as double,
-        );
-    Map<String, dynamic> toMapT(Rect rect) => {
-          'left': rect.left,
-          'top': rect.top,
-          'width': rect.width,
-          'height': rect.height,
-        };
 
     late SingleRootQuadtree<Rect> quadtree;
 
@@ -57,14 +46,14 @@ void main() {
         'maxItems': 1,
         'maxDepth': 5,
         'items': [
-          toMapT(nwRect),
-          toMapT(seseRect),
-          toMapT(senwRect),
+          nwRect.toMap(),
+          seseRect.toMap(),
+          senwRect.toMap(),
         ]
       };
 
       final quadtree =
-          SingleRootQuadtree<Rect>.fromMap(map, getBounds, fromMapT);
+          SingleRootQuadtree<Rect>.fromMap(map, getBounds, RectMapper.fromMap);
 
       expect(quadtree.maxItems, 1);
       expect(quadtree.maxDepth, 5);
@@ -156,9 +145,9 @@ void main() {
         quadtree.insert(Rect.fromLTWH(i * 10.0, i * 10.0, 9.9, 9.9));
       }
 
-      final otherQuadrant = Quadrant(x: 40, y: 40, width: 20, height: 20);
+      final otherRect = Rect.fromLTWH(40, 40, 20, 20);
 
-      final items = quadtree.retrieve(otherQuadrant);
+      final items = quadtree.retrieve(otherRect);
 
       expect(
         deepListEquality(items, [
@@ -177,11 +166,10 @@ void main() {
         quadtree.insert(Rect.fromLTWH(i * 10.0, i * 10.0, 10, 10));
       }
 
-      final otherQuadrant = Quadrant(x: 200, y: 200, width: 20, height: 20);
-      expect(quadtree.root.quadrant.bounds.looseOverlaps(otherQuadrant.bounds),
-          isFalse);
+      final otherRect = Rect.fromLTWH(200, 200, 20, 20);
+      expect(quadtree.root.quadrant.looseOverlaps(otherRect), isFalse);
 
-      final items = quadtree.retrieve(otherQuadrant);
+      final items = quadtree.retrieve(otherRect);
       expect(items.length, 0);
     });
 
@@ -203,15 +191,15 @@ void main() {
           // Original quadrant
           quadrant,
           // Subnodes 1st level
-          Quadrant(x: 0, y: 0, width: 50, height: 50),
-          Quadrant(x: 50, y: 0, width: 50, height: 50),
-          Quadrant(x: 0, y: 50, width: 50, height: 50),
-          Quadrant(x: 50, y: 50, width: 50, height: 50),
+          Rect.fromLTWH(0, 0, 50, 50),
+          Rect.fromLTWH(50, 0, 50, 50),
+          Rect.fromLTWH(0, 50, 50, 50),
+          Rect.fromLTWH(50, 50, 50, 50),
           // Subnodes 2nd level
-          Quadrant(x: 50, y: 50, width: 25, height: 25),
-          Quadrant(x: 75, y: 50, width: 25, height: 25),
-          Quadrant(x: 50, y: 75, width: 25, height: 25),
-          Quadrant(x: 75, y: 75, width: 25, height: 25),
+          Rect.fromLTWH(50, 50, 25, 25),
+          Rect.fromLTWH(75, 50, 25, 25),
+          Rect.fromLTWH(50, 75, 25, 25),
+          Rect.fromLTWH(75, 75, 25, 25),
         ]),
         isTrue,
       );
@@ -229,22 +217,21 @@ void main() {
       expect(quadtree.insert(seseRect), isTrue);
       expect(quadtree.insert(senwRect), isTrue);
 
-      final nonLeadQuadrants =
-          quadtree.getAllQuadrants(includeNonLeafNodes: false);
+      final nonLeadRects = quadtree.getAllQuadrants(includeNonLeafNodes: false);
       expect(
-        deepListEquality(nonLeadQuadrants, [
+        deepListEquality(nonLeadRects, [
           // Original quadrant
           // "quadrant" Not included
           // Subnodes 1st level
-          Quadrant(x: 0, y: 0, width: 50, height: 50),
-          Quadrant(x: 50, y: 0, width: 50, height: 50),
-          Quadrant(x: 0, y: 50, width: 50, height: 50),
-          // "Quadrant(x: 50, y: 50, width: 50, height: 50)" Not included
+          Rect.fromLTWH(0, 0, 50, 50),
+          Rect.fromLTWH(50, 0, 50, 50),
+          Rect.fromLTWH(0, 50, 50, 50),
+          // "Rect.fromLTWH( 50, 50,  50, 50)" Not included
           // Subnodes 2nd level
-          Quadrant(x: 50, y: 50, width: 25, height: 25),
-          Quadrant(x: 75, y: 50, width: 25, height: 25),
-          Quadrant(x: 50, y: 75, width: 25, height: 25),
-          Quadrant(x: 75, y: 75, width: 25, height: 25),
+          Rect.fromLTWH(50, 50, 25, 25),
+          Rect.fromLTWH(75, 50, 25, 25),
+          Rect.fromLTWH(50, 75, 25, 25),
+          Rect.fromLTWH(75, 75, 25, 25),
         ]),
         isTrue,
       );
@@ -316,26 +303,13 @@ void main() {
       final item = Rect.fromLTWH(10, 10, 10, 10);
       expect(quadtree.insert(item), isTrue);
 
-      final map = quadtree.toMap((rect) => {
-            'left': rect.left,
-            'top': rect.top,
-            'width': rect.width,
-            'height': rect.height,
-          });
+      final map = quadtree.toMap((item) => item.toMap());
 
       expect(map['_type'], 'SingleRootQuadtree');
       expect(map['quadrant'], quadrant.toMap());
       expect(map['maxItems'], 1);
       expect(map['maxDepth'], 5);
-      expect(
-        deepListEquality(
-          map['items'],
-          [
-            {'left': 10.0, 'top': 10.0, 'width': 10.0, 'height': 10.0}
-          ],
-        ),
-        isTrue,
-      );
+      expect(deepListEquality(map['items'], [item.toMap()]), isTrue);
     });
   });
 }

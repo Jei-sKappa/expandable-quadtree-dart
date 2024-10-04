@@ -3,14 +3,13 @@ import 'dart:ui';
 
 import 'package:equatable/equatable.dart';
 import 'package:fast_quadtree/src/extensions/remove_duplicates.dart';
-import 'package:fast_quadtree/src/quadrant.dart';
 import 'package:fast_quadtree/src/quadtree.dart';
 
 abstract class MultipleRootsQuadtree<T>
     with EquatableMixin
     implements Quadtree<T> {
   MultipleRootsQuadtree(
-    Quadrant quadrant, {
+    Rect quadrant, {
     this.maxItems = 5,
     this.maxDepth = 4,
     required this.getBounds,
@@ -94,8 +93,8 @@ abstract class MultipleRootsQuadtree<T>
   }
 
   @override
-  List<Quadrant> getAllQuadrants({bool includeNonLeafNodes = true}) {
-    List<Quadrant> results = [];
+  List<Rect> getAllQuadrants({bool includeNonLeafNodes = true}) {
+    List<Rect> results = [];
 
     for (final node in quadtreeNodes.values) {
       results.addAll(

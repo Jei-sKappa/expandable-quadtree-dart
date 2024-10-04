@@ -3,7 +3,10 @@ import 'dart:ui';
 
 import 'package:equatable/equatable.dart';
 import 'package:fast_quadtree/fast_quadtree.dart';
+import 'package:fast_quadtree/src/extensions/copy_with_on_rect.dart';
 import 'package:fast_quadtree/src/extensions/position_details_on_quadtree.dart';
+import 'package:fast_quadtree/src/extensions/to_map_on_rect.dart';
+import 'package:fast_quadtree/src/helpers/rect_mapper.dart';
 
 class HorizontallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
     with EquatableMixin {
@@ -20,7 +23,7 @@ class HorizontallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
     T Function(Map<String, dynamic>) fromMapT,
   ) {
     final tree = HorizontallyExpandableQuadtree(
-      Quadrant.fromMap(map['quadrant']),
+      RectMapper.fromMap(map['quadrant']),
       maxItems: map['maxItems'] as int,
       maxDepth: map['maxDepth'] as int,
       getBounds: getBounds,
@@ -111,13 +114,11 @@ class HorizontallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
   }
 
   @override
-  List<T> retrieve(Quadrant quadrant) {
+  List<T> retrieve(Rect quadrant) {
     List<T> results = [];
 
-    final quadrantBounds = quadrant.bounds;
-
     // Check which quadtree nodes the search bounds overlap with
-    final (:leftColumn, :rightColumn) = _getHorizontalColumns(quadrantBounds);
+    final (:leftColumn, :rightColumn) = _getHorizontalColumns(quadrant);
 
     for (int column = leftColumn; column <= rightColumn; column++) {
       if (quadtreeNodes.containsKey(column)) {
@@ -147,7 +148,7 @@ class HorizontallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
     final newLeft = horizontalColumn * singleNodeWidth;
 
     final newNode = QuadtreeNode<T>(
-      firstNode.quadrant.copyWith(x: newLeft),
+      firstNode.quadrant.copyWithLTWH(left: newLeft),
       tree: this,
     );
     quadtreeNodes[horizontalColumn] = newNode;

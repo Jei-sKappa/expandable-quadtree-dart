@@ -87,11 +87,11 @@ class QuadtreeController with ChangeNotifier {
 
       if (command == 'createQuadtree') {
         final data = message[2];
-        final quadrant = Quadrant(
-          x: data['quadrantX'],
-          y: data['quadrantY'],
-          width: data['quadrantWidth'],
-          height: data['quadrantHeight'],
+        final quadrant = Rect.fromLTWH(
+          data['quadrantX'],
+          data['quadrantY'],
+          data['quadrantWidth'],
+          data['quadrantHeight'],
         );
         getBounds(MyObject object) => object.bounds;
         if (data['isExpandable']) {
@@ -108,16 +108,14 @@ class QuadtreeController with ChangeNotifier {
             maxDepth: data['maxDepth'],
             getBounds: getBounds,
           );
-        }
-        else if (data['isHorizontallyExpandable']) {
+        } else if (data['isHorizontallyExpandable']) {
           quadtree = HorizontallyExpandableQuadtree<MyObject>(
             quadrant,
             maxItems: data['maxItems'],
             maxDepth: data['maxDepth'],
             getBounds: getBounds,
           );
-        }
-        else {
+        } else {
           quadtree = Quadtree<MyObject>(
             quadrant,
             maxItems: data['maxItems'],
@@ -177,14 +175,7 @@ class QuadtreeController with ChangeNotifier {
         replyPort!.send(quadrants);
       } else if (command == 'retrieveObjects') {
         final Rect bounds = message[2];
-        final objects = quadtree.retrieve(
-          Quadrant(
-            x: bounds.left,
-            y: bounds.top,
-            width: bounds.width,
-            height: bounds.height,
-          ),
-        );
+        final objects = quadtree.retrieve(bounds);
         replyPort!.send(objects);
       } else if (command == 'getQuadtreeMap') {
         final quadtreeMap = quadtree.toMap(MyObject.convertToMap);
@@ -381,11 +372,11 @@ class QuadtreeController with ChangeNotifier {
   }
 
   // Retrieve all quadrants from the quadtree
-  Future<List<Quadrant>> getAllQuadrants() async {
+  Future<List<Rect>> getAllQuadrants() async {
     await _ensureInitialized();
     final responsePort = ReceivePort();
     _sendPort.send(['getAllQuadrants', responsePort.sendPort]);
-    final List<Quadrant> quadrants = await responsePort.first;
+    final List<Rect> quadrants = await responsePort.first;
     return quadrants;
   }
 

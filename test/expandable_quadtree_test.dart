@@ -1,15 +1,16 @@
 import 'package:collection/collection.dart';
 import 'package:fast_quadtree/src/extensions/loose_overlaps_on_rect.dart';
+import 'package:fast_quadtree/src/extensions/to_map_on_rect.dart';
+import 'package:fast_quadtree/src/helpers/rect_mapper.dart';
 import 'package:test/test.dart';
 import 'package:fast_quadtree/src/expandable_quadtree.dart';
-import 'package:fast_quadtree/src/quadrant.dart';
 import 'dart:ui';
 
 void main() {
   group('ExpandableQuadtree', () {
     final deepListEquality = const DeepCollectionEquality.unordered().equals;
 
-    final quadrant = Quadrant(x: 0, y: 0, width: 100, height: 100);
+    final quadrant = Rect.fromLTWH(0, 0, 100, 100);
 
     // NW subnode
     final nwRect = Rect.fromLTWH(10, 10, 1, 1);
@@ -25,18 +26,6 @@ void main() {
     final outOfFirstExpandedBoundsHorizontally = Rect.fromLTWH(-150, 0, 1, 1);
 
     Rect getBounds(Rect rect) => rect;
-    Rect fromMapT(Map<String, dynamic> map) => Rect.fromLTWH(
-          map['left'] as double,
-          map['top'] as double,
-          map['width'] as double,
-          map['height'] as double,
-        );
-    Map<String, dynamic> toMapT(Rect rect) => {
-          'left': rect.left,
-          'top': rect.top,
-          'width': rect.width,
-          'height': rect.height,
-        };
 
     late ExpandableQuadtree<Rect> quadtree;
 
@@ -63,16 +52,16 @@ void main() {
         'maxItems': 1,
         'maxDepth': 5,
         'items': [
-          toMapT(nwRect),
-          toMapT(seseRect),
-          toMapT(senwRect),
-          toMapT(outOfBoundsVertically),
-          toMapT(outOfFirstExpandedBoundsHorizontally),
+          nwRect.toMap(),
+          seseRect.toMap(),
+          senwRect.toMap(),
+          outOfBoundsVertically.toMap(),
+          outOfFirstExpandedBoundsHorizontally.toMap(),
         ]
       };
 
       final quadtree =
-          ExpandableQuadtree<Rect>.fromMap(map, getBounds, fromMapT);
+          ExpandableQuadtree<Rect>.fromMap(map, getBounds, RectMapper.fromMap);
 
       expect(quadtree.maxItems, 1);
       expect(quadtree.maxDepth, 5);
@@ -217,14 +206,7 @@ void main() {
         outOfFirstExpandedBoundsHorizontally,
       ];
       quadtree.insertAll(rects);
-      final items = quadtree.retrieve(
-        Quadrant(
-          x: quadtree.left,
-          y: quadtree.top,
-          width: quadtree.width,
-          height: quadtree.height,
-        ),
-      );
+      final items = quadtree.retrieve(quadtree.quadrant);
       expect(deepListEquality(items, rects), isTrue);
     });
 
@@ -233,14 +215,9 @@ void main() {
         quadtree.insert(Rect.fromLTWH(i * 10.0, i * 10.0, 9.9, 9.9));
       }
 
-      final otherQuadrant = Quadrant(
-        x: -20,
-        y: -20,
-        width: 20 + 100 + 20,
-        height: 20 + 100 + 20,
-      );
+      final otherRect = Rect.fromLTWH(-20, -20, 20 + 100 + 20, 20 + 100 + 20);
 
-      final items = quadtree.retrieve(otherQuadrant);
+      final items = quadtree.retrieve(otherRect);
 
       expect(
         deepListEquality(items, [
@@ -271,18 +248,10 @@ void main() {
         quadtree.insert(Rect.fromLTWH(i * 10.0, i * 10.0, 9.9, 9.9));
       }
 
-      final otherQuadrant = Quadrant(x: 500, y: 500, width: 20, height: 20);
-      expect(
-        Quadrant(
-          x: quadtree.left,
-          y: quadtree.top,
-          width: quadtree.width,
-          height: quadtree.height,
-        ).bounds.looseOverlaps(otherQuadrant.bounds),
-        isFalse,
-      );
+      final otherRect = Rect.fromLTWH(500, 500, 20, 20);
+      expect(quadtree.quadrant.looseOverlaps(otherRect), isFalse);
 
-      final items = quadtree.retrieve(otherQuadrant);
+      final items = quadtree.retrieve(otherRect);
       expect(items.length, 0);
     });
 
@@ -304,27 +273,27 @@ void main() {
       expect(
         deepListEquality(allQuadrants, [
           // New outer quadrant
-          Quadrant(x: -300, y: -300, width: 400, height: 400),
+          Rect.fromLTWH(-300, -300, 400, 400),
           // New outer quadrant subnodes
-          Quadrant(x: -300, y: -300, width: 200, height: 200),
-          Quadrant(x: -100, y: -300, width: 200, height: 200),
-          Quadrant(x: -300, y: -100, width: 200, height: 200),
-          Quadrant(x: -100, y: -100, width: 200, height: 200), // 1 subnode
+          Rect.fromLTWH(-300, -300, 200, 200),
+          Rect.fromLTWH(-100, -300, 200, 200),
+          Rect.fromLTWH(-300, -100, 200, 200),
+          Rect.fromLTWH(-100, -100, 200, 200), // 1 subnode
           // Sub outerquadrant subnodes
-          Quadrant(x: -100, y: -100, width: 100, height: 100),
-          Quadrant(x: 0, y: -100, width: 100, height: 100),
-          Quadrant(x: -100, y: 0, width: 100, height: 100),
+          Rect.fromLTWH(-100, -100, 100, 100),
+          Rect.fromLTWH(0, -100, 100, 100),
+          Rect.fromLTWH(-100, 0, 100, 100),
           quadrant, // Original quadrant
           // Subnodes 1st level
-          Quadrant(x: 0, y: 0, width: 50, height: 50),
-          Quadrant(x: 50, y: 0, width: 50, height: 50),
-          Quadrant(x: 0, y: 50, width: 50, height: 50),
-          Quadrant(x: 50, y: 50, width: 50, height: 50),
+          Rect.fromLTWH(0, 0, 50, 50),
+          Rect.fromLTWH(50, 0, 50, 50),
+          Rect.fromLTWH(0, 50, 50, 50),
+          Rect.fromLTWH(50, 50, 50, 50),
           // Subnodes 2nd level
-          Quadrant(x: 50, y: 50, width: 25, height: 25),
-          Quadrant(x: 75, y: 50, width: 25, height: 25),
-          Quadrant(x: 50, y: 75, width: 25, height: 25),
-          Quadrant(x: 75, y: 75, width: 25, height: 25),
+          Rect.fromLTWH(50, 50, 25, 25),
+          Rect.fromLTWH(75, 50, 25, 25),
+          Rect.fromLTWH(50, 75, 25, 25),
+          Rect.fromLTWH(75, 75, 25, 25),
         ]),
         isTrue,
       );
@@ -344,32 +313,31 @@ void main() {
       expect(quadtree.insert(outOfBoundsVertically), isTrue);
       expect(quadtree.insert(outOfFirstExpandedBoundsHorizontally), isTrue);
 
-      final nonLeadQuadrants =
-          quadtree.getAllQuadrants(includeNonLeafNodes: false);
+      final nonLeadRects = quadtree.getAllQuadrants(includeNonLeafNodes: false);
       expect(
-        deepListEquality(nonLeadQuadrants, [
+        deepListEquality(nonLeadRects, [
           // New outer quadrant
-          // Quadrant(x: -300, y: -300, width: 400, height: 400),
+          // Rect.fromLTWH(-300, -300, 400, 400),
           // New outer quadrant subnodes
-          Quadrant(x: -300, y: -300, width: 200, height: 200),
-          Quadrant(x: -100, y: -300, width: 200, height: 200),
-          Quadrant(x: -300, y: -100, width: 200, height: 200),
-          // Quadrant(x: -100, y: -100, width: 200, height: 200), // 1 subnode
+          Rect.fromLTWH(-300, -300, 200, 200),
+          Rect.fromLTWH(-100, -300, 200, 200),
+          Rect.fromLTWH(-300, -100, 200, 200),
+          // Rect.fromLTWH(-100, -100, 200, 200), // 1 subnode
           // Sub outerquadrant subnodes
-          Quadrant(x: -100, y: -100, width: 100, height: 100),
-          Quadrant(x: 0, y: -100, width: 100, height: 100),
-          Quadrant(x: -100, y: 0, width: 100, height: 100),
+          Rect.fromLTWH(-100, -100, 100, 100),
+          Rect.fromLTWH(0, -100, 100, 100),
+          Rect.fromLTWH(-100, 0, 100, 100),
           // quadrant, // Original quadrant not included
           // Subnodes 1st level
-          Quadrant(x: 0, y: 0, width: 50, height: 50),
-          Quadrant(x: 50, y: 0, width: 50, height: 50),
-          Quadrant(x: 0, y: 50, width: 50, height: 50),
-          // "Quadrant(x: 50, y: 50, width: 50, height: 50)" Not included
+          Rect.fromLTWH(0, 0, 50, 50),
+          Rect.fromLTWH(50, 0, 50, 50),
+          Rect.fromLTWH(0, 50, 50, 50),
+          // "Rect.fromLTWH(50, 50, 50, 50)" Not included
           // Subnodes 2nd level
-          Quadrant(x: 50, y: 50, width: 25, height: 25),
-          Quadrant(x: 75, y: 50, width: 25, height: 25),
-          Quadrant(x: 50, y: 75, width: 25, height: 25),
-          Quadrant(x: 75, y: 75, width: 25, height: 25),
+          Rect.fromLTWH(50, 50, 25, 25),
+          Rect.fromLTWH(75, 50, 25, 25),
+          Rect.fromLTWH(50, 75, 25, 25),
+          Rect.fromLTWH(75, 75, 25, 25),
         ]),
         isTrue,
       );
@@ -446,24 +414,21 @@ void main() {
       expect(quadtree.insert(outOfBoundsVertically), isTrue);
       expect(quadtree.insert(outOfFirstExpandedBoundsHorizontally), isTrue);
 
-      final map = quadtree.toMap(toMapT);
+      final map = quadtree.toMap((item) => item.toMap());
 
       expect(map['_type'], 'ExpandableQuadtree');
-      expect(
-        map['quadrant'],
-        Quadrant(x: -300, y: -300, width: 400, height: 400).toMap(),
-      );
+      expect(map['quadrant'], Rect.fromLTWH(-300, -300, 400, 400).toMap());
       expect(map['maxItems'], 1);
       expect(map['maxDepth'], 5);
       expect(
         deepListEquality(
           map['items'],
           [
-            toMapT(nwRect),
-            toMapT(seseRect),
-            toMapT(senwRect),
-            toMapT(outOfBoundsVertically),
-            toMapT(outOfFirstExpandedBoundsHorizontally),
+            nwRect.toMap(),
+            seseRect.toMap(),
+            senwRect.toMap(),
+            outOfBoundsVertically.toMap(),
+            outOfFirstExpandedBoundsHorizontally.toMap(),
           ],
         ),
         isTrue,

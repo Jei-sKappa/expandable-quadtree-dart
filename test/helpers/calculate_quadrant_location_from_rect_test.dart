@@ -1,13 +1,12 @@
 import 'dart:ui';
 
 import 'package:fast_quadtree/src/helpers/calculate_quadrant_location_from_rect.dart';
-import 'package:fast_quadtree/src/quadrant.dart';
 import 'package:fast_quadtree/src/quadrant_location.dart';
 import 'package:test/test.dart';
 
 void main() {
   group('calculateQuadrantLocationsFromRect', () {
-    final quadrant = Quadrant(x: 0, y: 0, width: 100, height: 100);
+    final quadrant = Rect.fromLTWH(0, 0, 100, 100);
 
     test('rect is in the northwest quadrant', () {
       final rect = Rect.fromLTWH(10, 10, 20, 20);

@@ -4,13 +4,14 @@ import 'dart:ui';
 import 'package:equatable/equatable.dart';
 import 'package:fast_quadtree/src/cached_quadtree.dart';
 import 'package:fast_quadtree/src/expandable_quadtree.dart';
-import 'package:fast_quadtree/src/extensions/collapse_quadrant.dart';
+import 'package:fast_quadtree/src/extensions/collapse_rect.dart';
 import 'package:fast_quadtree/src/extensions/is_inscribed_on_rect.dart';
 import 'package:fast_quadtree/src/extensions/loose_overlaps_on_rect.dart';
+import 'package:fast_quadtree/src/extensions/to_map_on_rect.dart';
 import 'package:fast_quadtree/src/helpers/calculate_quadrant_location_from_rect.dart';
 import 'package:fast_quadtree/src/extensions/remove_duplicates.dart';
+import 'package:fast_quadtree/src/helpers/rect_mapper.dart';
 import 'package:fast_quadtree/src/horizontally_expandable_quadtree.dart';
-import 'package:fast_quadtree/src/quadrant.dart';
 import 'package:fast_quadtree/src/quadrant_location.dart';
 import 'package:fast_quadtree/src/single_root_quadtree.dart';
 import 'package:fast_quadtree/src/vertically_expandable_quadtree.dart';
@@ -21,7 +22,7 @@ part 'quadtree_decorator.dart';
 
 abstract class Quadtree<T> with EquatableMixin {
   factory Quadtree(
-    Quadrant quadrant, {
+    Rect quadrant, {
     int maxItems,
     int maxDepth,
     required Rect Function(T) getBounds,
@@ -110,18 +111,18 @@ abstract class Quadtree<T> with EquatableMixin {
   /// Remove the item from the [Quadtree] looping through **only** the
   /// nodes that intersect with the item.
   ///
-  /// If [item.getQuadrantsLocations] is expensive, consider using [remove]
+  /// If [item.getRectsLocations] is expensive, consider using [remove]
   void localizedRemove(T item);
 
   /// Remove all items from the [Quadtree] looping through **only** the
   /// nodes that intersect with the item.
   ///
-  /// If [item.getQuadrantsLocations] is expensive, consider using [removeAll]
+  /// If [item.getRectsLocations] is expensive, consider using [removeAll]
   void localizedRemoveAll(List<T> items);
 
   /// Return all items that could collide with the given item, given
   /// quadrant.
-  List<T> retrieve(Quadrant quadrant);
+  List<T> retrieve(Rect quadrant);
 
   /// Retrieves all quadrants from the quadtree.
   ///
@@ -129,8 +130,8 @@ abstract class Quadtree<T> with EquatableMixin {
   /// into a list.
   ///
   /// Returns:
-  ///   A list of [Quadrant] items representing all the quadrants in the quadtree.
-  List<Quadrant> getAllQuadrants({bool includeNonLeafNodes});
+  ///   A list of [Rect] items representing all the quadrants in the quadtree.
+  List<Rect> getAllQuadrants({bool includeNonLeafNodes});
 
   /// Retrieves all items stored in the quadtree.
   ///

@@ -9,7 +9,7 @@ void main() {
 
     setUp(() {
       quadtree = SingleRootQuadtree(
-        Quadrant(x: 0, y: 0, width: 100, height: 100),
+        Rect.fromLTWH(0, 0, 100, 100),
         getBounds: (p0) => throw Error(),
       );
     });
@@ -45,7 +45,7 @@ void main() {
 
     setUp(() {
       quadtree = ExpandableQuadtree(
-        Quadrant(x: 0, y: 0, width: 100, height: 100),
+        Rect.fromLTWH(0, 0, 100, 100),
         getBounds: (p0) => throw Error(),
       );
     });
@@ -81,7 +81,7 @@ void main() {
 
     setUp(() {
       quadtree = HorizontallyExpandableQuadtree(
-        Quadrant(x: 0, y: 0, width: 100, height: 100),
+        Rect.fromLTWH(0, 0, 100, 100),
         getBounds: (p0) => throw Error(),
       );
     });
@@ -117,7 +117,7 @@ void main() {
 
     setUp(() {
       quadtree = VerticallyExpandableQuadtree(
-        Quadrant(x: 0, y: 0, width: 100, height: 100),
+        Rect.fromLTWH(0, 0, 100, 100),
         getBounds: (p0) => throw Error(),
       );
     });

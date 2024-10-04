@@ -3,7 +3,10 @@ import 'dart:ui';
 
 import 'package:equatable/equatable.dart';
 import 'package:fast_quadtree/fast_quadtree.dart';
+import 'package:fast_quadtree/src/extensions/copy_with_on_rect.dart';
 import 'package:fast_quadtree/src/extensions/position_details_on_quadtree.dart';
+import 'package:fast_quadtree/src/extensions/to_map_on_rect.dart';
+import 'package:fast_quadtree/src/helpers/rect_mapper.dart';
 
 class VerticallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
     with EquatableMixin {
@@ -20,7 +23,7 @@ class VerticallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
     T Function(Map<String, dynamic>) fromMapT,
   ) {
     final tree = VerticallyExpandableQuadtree(
-      Quadrant.fromMap(map['quadrant']),
+      RectMapper.fromMap(map['quadrant']),
       maxItems: map['maxItems'] as int,
       maxDepth: map['maxDepth'] as int,
       getBounds: getBounds,
@@ -111,13 +114,11 @@ class VerticallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
   }
 
   @override
-  List<T> retrieve(Quadrant quadrant) {
+  List<T> retrieve(Rect quadrant) {
     List<T> results = [];
 
-    final quadrantBounds = quadrant.bounds;
-
     // Check which quadtree nodes the search bounds overlap with
-    final (:topRow, :bottomRow) = _getVerticalRows(quadrantBounds);
+    final (:topRow, :bottomRow) = _getVerticalRows(quadrant);
 
     for (int row = topRow; row <= bottomRow; row++) {
       if (quadtreeNodes.containsKey(row)) {
@@ -147,7 +148,7 @@ class VerticallyExpandableQuadtree<T> extends MultipleRootsQuadtree<T>
     final newTop = verticalRow * singleNodeHeight;
 
     final newNode = QuadtreeNode<T>(
-      firstNode.quadrant.copyWith(y: newTop),
+      firstNode.quadrant.copyWithLTWH(top: newTop),
       tree: this,
     );
     quadtreeNodes[verticalRow] = newNode;

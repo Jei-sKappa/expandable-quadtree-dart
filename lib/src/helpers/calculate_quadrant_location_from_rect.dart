@@ -1,15 +1,14 @@
 import 'dart:ui';
 
-import 'package:fast_quadtree/src/quadrant.dart';
 import 'package:fast_quadtree/src/quadrant_location.dart';
 
 List<QuadrantLocation> calculateQuadrantLocationsFromRect(
   Rect itemBounds,
-  Quadrant quadrant,
+  Rect quadrant,
 ) {
   final List<QuadrantLocation> quadrants = [];
-  final xMidpoint = quadrant.x + quadrant.width / 2;
-  final yMidpoint = quadrant.y + quadrant.height / 2;
+  final xMidpoint = quadrant.left + quadrant.width / 2;
+  final yMidpoint = quadrant.top + quadrant.height / 2;
 
   final startIsNorth = itemBounds.top <= yMidpoint;
   final startIsWest = itemBounds.left <= xMidpoint;

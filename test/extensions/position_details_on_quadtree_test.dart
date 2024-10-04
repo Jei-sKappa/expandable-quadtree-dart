@@ -1,9 +1,11 @@
+import 'dart:ui';
+
 import 'package:fast_quadtree/fast_quadtree.dart';
 import 'package:test/test.dart';
 import 'package:fast_quadtree/src/extensions/position_details_on_quadtree.dart';
 
 void main() {
-  final quadrant = Quadrant(x: -100, y: -100, width: 100, height: 100);
+  final quadrant = Rect.fromLTWH(-100, -100, 100, 100);
 
   group('SingleRootQuadtree Extension', () {
     late SingleRootQuadtree quadtree;

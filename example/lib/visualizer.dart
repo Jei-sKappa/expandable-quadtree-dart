@@ -55,6 +55,10 @@ class __QuadtreeVisualizerState extends State<_QuadtreeVisualizer> {
       (myObject) => myObject.bounds,
       MyObject.fromMap,
     );
+    // TODO: This is inefficient, becuse it'll loose the fast access to the cached items when painting the quadtree.
+    if (quadtree is CachedQuadtree<MyObject>) {
+      quadtree = (quadtree as CachedQuadtree<MyObject>).decoratedQuadtree;
+    }
     setState(() {});
   }
 
@@ -174,7 +178,7 @@ class QuadtreePainter extends CustomPainter {
     double left,
     double top,
   ) {
-    _drawQuadrant(canvas, quadtreeNode.quadrant, scale, left, top);
+    _drawRect(canvas, quadtreeNode.quadrant, scale, left, top);
 
     if (quadtreeNode.isNotLeaf) {
       for (final child in quadtreeNode.nodes.values) {
@@ -184,16 +188,16 @@ class QuadtreePainter extends CustomPainter {
   }
 
   // Draw a single quadrant
-  void _drawQuadrant(
+  void _drawRect(
     Canvas canvas,
-    Quadrant quadrant,
+    Rect quadrant,
     double scale,
     double left,
     double top,
   ) {
     final rect = Rect.fromLTWH(
-      left + quadrant.x * scale,
-      top + quadrant.y * scale,
+      left + quadrant.left * scale,
+      top + quadrant.top * scale,
       quadrant.width * scale,
       quadrant.height * scale,
     );

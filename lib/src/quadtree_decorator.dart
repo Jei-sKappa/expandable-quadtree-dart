@@ -3,7 +3,6 @@ part of 'quadtree.dart';
 abstract class QuadtreeDecorator<T> with EquatableMixin implements Quadtree<T> {
   QuadtreeDecorator(this.decoratedQuadtree);
 
-  @visibleForTesting
   final Quadtree<T> decoratedQuadtree;
 
   @override
@@ -67,10 +66,10 @@ abstract class QuadtreeDecorator<T> with EquatableMixin implements Quadtree<T> {
       decoratedQuadtree.localizedRemoveAll(items);
 
   @override
-  List<T> retrieve(Quadrant quadrant) => decoratedQuadtree.retrieve(quadrant);
+  List<T> retrieve(Rect quadrant) => decoratedQuadtree.retrieve(quadrant);
 
   @override
-  List<Quadrant> getAllQuadrants({bool includeNonLeafNodes = true}) =>
+  List<Rect> getAllQuadrants({bool includeNonLeafNodes = true}) =>
       decoratedQuadtree.getAllQuadrants(
           includeNonLeafNodes: includeNonLeafNodes);
 

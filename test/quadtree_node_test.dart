@@ -2,6 +2,8 @@ import 'dart:ui';
 
 import 'package:collection/collection.dart';
 import 'package:fast_quadtree/src/extensions/loose_overlaps_on_rect.dart';
+import 'package:fast_quadtree/src/extensions/to_map_on_rect.dart';
+import 'package:fast_quadtree/src/helpers/rect_mapper.dart';
 import 'package:test/test.dart';
 import 'package:fast_quadtree/fast_quadtree.dart';
 
@@ -9,7 +11,7 @@ void main() {
   group('QuadtreeNode', () {
     final deepListEquality = const DeepCollectionEquality.unordered().equals;
 
-    final quadrant = Quadrant(x: 0, y: 0, width: 100, height: 100);
+    final quadrant = Rect.fromLTWH(0, 0, 100, 100);
     late Quadtree<Rect> tree;
     late QuadtreeNode<Rect> node;
     // NW subnode
@@ -23,10 +25,10 @@ void main() {
     // rectangles are inserted
     final quadtreeNodeMap = {
       'quadrant': {
-        'x': 0.0,
-        'y': 0.0,
-        'width': 100.0,
-        'height': 100.0,
+        'left': 0.0,
+        'top': 0.0,
+        'right': 100.0,
+        'bottom': 100.0,
       },
       'depth': 0,
       'negativeDepth': 0,
@@ -34,10 +36,10 @@ void main() {
       'nodes': {
         'ne': {
           'quadrant': {
-            'x': 50.0,
-            'y': 0.0,
-            'width': 50.0,
-            'height': 50.0,
+            'left': 50.0,
+            'top': 0.0,
+            'right': 100.0,
+            'bottom': 50.0,
           },
           'depth': 1,
           'negativeDepth': 0,
@@ -46,10 +48,10 @@ void main() {
         },
         'nw': {
           'quadrant': {
-            'x': 0.0,
-            'y': 0.0,
-            'width': 50.0,
-            'height': 50.0,
+            'left': 0.0,
+            'top': 0.0,
+            'right': 50.0,
+            'bottom': 50.0,
           },
           'depth': 1,
           'negativeDepth': 0,
@@ -57,18 +59,18 @@ void main() {
             {
               'left': 10.0,
               'top': 10.0,
-              'width': 1.0,
-              'height': 1.0,
+              'right': 11.0,
+              'bottom': 11.0,
             },
           ],
           'nodes': {},
         },
         'se': {
           'quadrant': {
-            'x': 50.0,
-            'y': 50.0,
-            'width': 50.0,
-            'height': 50.0,
+            'left': 50.0,
+            'top': 50.0,
+            'right': 100.0,
+            'bottom': 100.0,
           },
           'depth': 1,
           'negativeDepth': 0,
@@ -76,10 +78,10 @@ void main() {
           'nodes': {
             'ne': {
               'quadrant': {
-                'x': 75.0,
-                'y': 50.0,
-                'width': 25.0,
-                'height': 25.0,
+                'left': 75.0,
+                'top': 50.0,
+                'right': 100.0,
+                'bottom': 75.0,
               },
               'depth': 2,
               'negativeDepth': 0,
@@ -88,10 +90,10 @@ void main() {
             },
             'nw': {
               'quadrant': {
-                'x': 50.0,
-                'y': 50.0,
-                'width': 25.0,
-                'height': 25.0,
+                'left': 50.0,
+                'top': 50.0,
+                'right': 75.0,
+                'bottom': 75.0,
               },
               'depth': 2,
               'negativeDepth': 0,
@@ -99,18 +101,18 @@ void main() {
                 {
                   'left': 60.0,
                   'top': 60.0,
-                  'width': 1.0,
-                  'height': 1.0,
+                  'right': 61.0,
+                  'bottom': 61.0,
                 },
               ],
               'nodes': {},
             },
             'se': {
               'quadrant': {
-                'x': 75.0,
-                'y': 75.0,
-                'width': 25.0,
-                'height': 25.0,
+                'left': 75.0,
+                'top': 75.0,
+                'right': 100.0,
+                'bottom': 100.0,
               },
               'depth': 2,
               'negativeDepth': 0,
@@ -118,18 +120,18 @@ void main() {
                 {
                   'left': 90.0,
                   'top': 90.0,
-                  'width': 1.0,
-                  'height': 1.0,
+                  'right': 91.0,
+                  'bottom': 91.0,
                 },
               ],
               'nodes': {},
             },
             'sw': {
               'quadrant': {
-                'x': 50.0,
-                'y': 75.0,
-                'width': 25.0,
-                'height': 25.0,
+                'left': 50.0,
+                'top': 75.0,
+                'right': 75.0,
+                'bottom': 100.0,
               },
               'depth': 2,
               'negativeDepth': 0,
@@ -140,10 +142,10 @@ void main() {
         },
         'sw': {
           'quadrant': {
-            'x': 0.0,
-            'y': 50.0,
-            'width': 50.0,
-            'height': 50.0,
+            'left': 0.0,
+            'top': 50.0,
+            'right': 50.0,
+            'bottom': 100.0,
           },
           'depth': 1,
           'negativeDepth': 0,
@@ -174,12 +176,7 @@ void main() {
       final node = QuadtreeNode<Rect>.fromMap(
         quadtreeNodeMap,
         tree,
-        (rectMap) => Rect.fromLTWH(
-          rectMap['left'],
-          rectMap['top'],
-          rectMap['width'],
-          rectMap['height'],
-        ),
+        RectMapper.fromMap,
       );
       expect(node.nodes.keys, containsAll(QuadrantLocation.values));
       final seNode = node.nodes[QuadrantLocation.se]!;
@@ -349,9 +346,9 @@ void main() {
         node.insert(Rect.fromLTWH(i * 10.0, i * 10.0, 9.9, 9.9));
       }
 
-      final otherQuadrant = Quadrant(x: 40, y: 40, width: 20, height: 20);
+      final otherRect = Rect.fromLTWH(40, 40, 20, 20);
 
-      final items = node.retrieve(otherQuadrant);
+      final items = node.retrieve(otherRect);
 
       expect(
         deepListEquality(items, [
@@ -370,10 +367,10 @@ void main() {
         node.insert(Rect.fromLTWH(i * 10.0, i * 10.0, 10, 10));
       }
 
-      final otherQuadrant = Quadrant(x: 200, y: 200, width: 20, height: 20);
-      expect(node.quadrant.bounds.looseOverlaps(otherQuadrant.bounds), isFalse);
+      final otherRect = Rect.fromLTWH(200, 200, 20, 20);
+      expect(node.quadrant.looseOverlaps(otherRect), isFalse);
 
-      final items = node.retrieve(otherQuadrant);
+      final items = node.retrieve(otherRect);
       expect(items.length, 0);
     });
 
@@ -395,15 +392,15 @@ void main() {
           // Original quadrant
           quadrant,
           // Subnodes 1st level
-          Quadrant(x: 0, y: 0, width: 50, height: 50),
-          Quadrant(x: 50, y: 0, width: 50, height: 50),
-          Quadrant(x: 0, y: 50, width: 50, height: 50),
-          Quadrant(x: 50, y: 50, width: 50, height: 50),
+          Rect.fromLTWH(0, 0, 50, 50),
+          Rect.fromLTWH(50, 0, 50, 50),
+          Rect.fromLTWH(0, 50, 50, 50),
+          Rect.fromLTWH(50, 50, 50, 50),
           // Subnodes 2nd level
-          Quadrant(x: 50, y: 50, width: 25, height: 25),
-          Quadrant(x: 75, y: 50, width: 25, height: 25),
-          Quadrant(x: 50, y: 75, width: 25, height: 25),
-          Quadrant(x: 75, y: 75, width: 25, height: 25),
+          Rect.fromLTWH(50, 50, 25, 25),
+          Rect.fromLTWH(75, 50, 25, 25),
+          Rect.fromLTWH(50, 75, 25, 25),
+          Rect.fromLTWH(75, 75, 25, 25),
         ]),
         isTrue,
       );
@@ -421,21 +418,21 @@ void main() {
       node.insert(seseRect);
       node.insert(senwRect);
 
-      final nonLeadQuadrants = node.getAllQuadrants(includeNonLeafNodes: false);
+      final nonLeadRects = node.getAllQuadrants(includeNonLeafNodes: false);
       expect(
-        deepListEquality(nonLeadQuadrants, [
+        deepListEquality(nonLeadRects, [
           // Original quadrant
           // "quadrant" Not included
           // Subnodes 1st level
-          Quadrant(x: 0, y: 0, width: 50, height: 50),
-          Quadrant(x: 50, y: 0, width: 50, height: 50),
-          Quadrant(x: 0, y: 50, width: 50, height: 50),
-          // "Quadrant(x: 50, y: 50, width: 50, height: 50)" Not included
+          Rect.fromLTWH(0, 0, 50, 50),
+          Rect.fromLTWH(50, 0, 50, 50),
+          Rect.fromLTWH(0, 50, 50, 50),
+          // "Rect.fromLTWH( 50,  50,  50,  50)" Not included
           // Subnodes 2nd level
-          Quadrant(x: 50, y: 50, width: 25, height: 25),
-          Quadrant(x: 75, y: 50, width: 25, height: 25),
-          Quadrant(x: 50, y: 75, width: 25, height: 25),
-          Quadrant(x: 75, y: 75, width: 25, height: 25),
+          Rect.fromLTWH(50, 50, 25, 25),
+          Rect.fromLTWH(75, 50, 25, 25),
+          Rect.fromLTWH(50, 75, 25, 25),
+          Rect.fromLTWH(75, 75, 25, 25),
         ]),
         isTrue,
       );
@@ -506,14 +503,7 @@ void main() {
       node.insert(seseRect);
       node.insert(senwRect);
 
-      final map = node.toMap(
-        (rect) => {
-          'left': rect.left,
-          'top': rect.top,
-          'width': rect.width,
-          'height': rect.height,
-        },
-      );
+      final map = node.toMap((item) => item.toMap());
       expect(map, quadtreeNodeMap);
     });
   });

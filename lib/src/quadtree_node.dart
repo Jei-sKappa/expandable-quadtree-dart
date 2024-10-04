@@ -19,7 +19,7 @@ class QuadtreeNode<T> with EquatableMixin {
     T Function(Map<String, dynamic>) fromMapT,
   ) {
     final node = QuadtreeNode<T>(
-      Quadrant.fromMap(map['quadrant']),
+      RectMapper.fromMap(map['quadrant']),
       depth: map['depth'] as int,
       negativeDepth: map['negativeDepth'] as int,
       tree: tree,
@@ -41,7 +41,7 @@ class QuadtreeNode<T> with EquatableMixin {
     return node;
   }
 
-  final Quadrant quadrant;
+  final Rect quadrant;
 
   /// Items contained within the node
   final List<T> items;
@@ -151,7 +151,7 @@ class QuadtreeNode<T> with EquatableMixin {
   /// Remove the item from the [Quadtree] looping through **only** the
   /// nodes that intersect with the item.
   ///
-  /// If [item.getQuadrantsLocations] is expensive, consider using [remove]
+  /// If [item.getRectsLocations] is expensive, consider using [remove]
   void localizedRemove(T item) {
     if (items.remove(item)) return;
 
@@ -165,7 +165,7 @@ class QuadtreeNode<T> with EquatableMixin {
   /// Remove all items from the [Quadtree] looping through **only** the
   /// nodes that intersect with the item.
   ///
-  /// If [item.getQuadrantsLocations] is expensive, consider using [removeAll]
+  /// If [item.getRectsLocations] is expensive, consider using [removeAll]
   void localizedRemoveAll(List<T> items) {
     for (final item in items) {
       localizedRemove(item);
@@ -173,10 +173,10 @@ class QuadtreeNode<T> with EquatableMixin {
   }
 
   /// Return all items that overlaps with the given item, given quadrant.
-  List<T> retrieve(Quadrant quadrant) {
+  List<T> retrieve(Rect quadrant) {
     // If the node's quadrant is completely contained within the given
     // quadrant, return all items in the node.
-    if (this.quadrant.bounds.isInscribed(quadrant.bounds)) {
+    if (this.quadrant.isInscribed(quadrant)) {
       return getAllItems(removeDuplicates: true);
     }
 
@@ -185,13 +185,13 @@ class QuadtreeNode<T> with EquatableMixin {
 
     final List<T> items = [];
     for (final item in this.items) {
-      if (quadrant.bounds.looseOverlaps(tree.getBounds(item))) {
+      if (quadrant.looseOverlaps(tree.getBounds(item))) {
         items.add(item);
       }
     }
 
     final quadrantLocations = calculateQuadrantLocationsFromRect(
-      quadrant.bounds,
+      quadrant,
       this.quadrant,
     );
 
@@ -213,18 +213,18 @@ class QuadtreeNode<T> with EquatableMixin {
   /// Parameters:
   /// - `includeNonLeafNodes` (optional): A boolean flag indicating whether to
   /// include non-leaf nodes in the resulting list. Defaults to `true`.
-  /// 
+  ///
   /// Returns: A list of all quadrants in the quadtree.
-  List<Quadrant> getAllQuadrants({bool includeNonLeafNodes = true}) {
+  List<Rect> getAllQuadrants({bool includeNonLeafNodes = true}) {
     if (includeNonLeafNodes) {
       return _getAllQuadrants();
     }
 
-    return _getAllQuadrantOnLeafNodes();
+    return _getAllRectOnLeafNodes();
   }
 
-  List<Quadrant> _getAllQuadrants() {
-    final List<Quadrant> quadrants = [quadrant];
+  List<Rect> _getAllQuadrants() {
+    final List<Rect> quadrants = [quadrant];
 
     for (final node in nodes.values) {
       quadrants.addAll(node._getAllQuadrants());
@@ -233,8 +233,8 @@ class QuadtreeNode<T> with EquatableMixin {
     return quadrants;
   }
 
-  List<Quadrant> _getAllQuadrantOnLeafNodes() {
-    final List<Quadrant> quadrants = [];
+  List<Rect> _getAllRectOnLeafNodes() {
+    final List<Rect> quadrants = [];
 
     if (isLeaf) {
       quadrants.add(quadrant);
@@ -243,7 +243,7 @@ class QuadtreeNode<T> with EquatableMixin {
     // Node is not a leaf node
 
     for (final node in nodes.values) {
-      quadrants.addAll(node._getAllQuadrantOnLeafNodes());
+      quadrants.addAll(node._getAllRectOnLeafNodes());
     }
 
     return quadrants;
@@ -346,7 +346,7 @@ class QuadtreeNode<T> with EquatableMixin {
 
   List<QuadrantLocation> _calculateQuadrantLocations(
     T item,
-    Quadrant quadrant,
+    Rect quadrant,
   ) {
     final bounds = tree.getBounds(item);
     return calculateQuadrantLocationsFromRect(bounds, quadrant);
