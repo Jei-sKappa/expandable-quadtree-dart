@@ -1,6 +1,6 @@
 name: expandable_quadtree
 description: A flexible and efficient Quadtree implementation for Flutter and Dart, perfect for spatial indexing, collision detection, and organizing large sets of 2D data.
-version: 0.1.0
+version: 0.1.1
 repository: https://github.com/Jei-sKappa/expandable-quadtree-dart
 issue_tracker: https://github.com/Jei-sKappa/expandable-quadtree-dart/issues
 documentation: https://github.com/Jei-sKappa/expandable-quadtree-dart
