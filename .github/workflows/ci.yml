@@ -19,6 +19,7 @@ jobs:
       - run: flutter test --coverage
       - uses: codecov/codecov-action@v2
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage/lcov.info
           flags: unittests
           fail_ci_if_error: true
