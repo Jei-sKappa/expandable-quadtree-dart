@@ -75,9 +75,6 @@ class QuadtreeNode<T> with EquatableMixin {
         depth,
       ];
 
-  @override
-  bool get stringify => true;
-
   /// Insert the item into the node. If the node exceeds the capacity,
   /// it will split and add all items to their corresponding subnodes.
   ///

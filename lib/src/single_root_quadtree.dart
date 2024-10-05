@@ -87,9 +87,6 @@ class SingleRootQuadtree<T> with EquatableMixin implements Quadtree<T> {
       [maxItems, maxDepth, getBounds, root, _depth, _negativeDepth];
 
   @override
-  bool? get stringify => true;
-
-  @override
   bool insert(T item) {
     if (isRectOutOfBounds(getBounds(item))) return false;
 
