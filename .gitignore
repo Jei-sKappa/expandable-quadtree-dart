@@ -45,6 +45,9 @@ app.*.map.json
 # Do not track pubspec.lock in version control
 pubspec.lock
 
+# Do not track coverage folder in version control
+coverage/
+
 # MacOS
 .DS_Store
 
