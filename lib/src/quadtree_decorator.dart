@@ -87,6 +87,7 @@ abstract class QuadtreeDecorator<T> with EquatableMixin implements Quadtree<T> {
   Map<String, dynamic> toMap(Map<String, dynamic> Function(T) toMapT) =>
       decoratedQuadtree.toMap(toMapT);
 
+  @visibleForTesting
   @protected
   Map<String, dynamic> decoratedQuadtreeToMap(
     Map<String, dynamic> Function(T) toMapT,
