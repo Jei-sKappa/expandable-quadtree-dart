@@ -16,4 +16,9 @@ jobs:
           channel: stable
       - run: flutter pub get
       - run: flutter analyze
-      - run: flutter test
+      - run: flutter test --coverage
+      - uses: codecov/codecov-action@v2
+        with:
+          file: ./coverage/lcov.info
+          flags: unittests
+          fail_ci_if_error: true
