@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:equatable/equatable.dart';
@@ -20,7 +19,7 @@ import 'package:meta/meta.dart';
 part 'quadtree_node.dart';
 part 'quadtree_decorator.dart';
 
-abstract class Quadtree<T> with EquatableMixin {
+abstract interface class Quadtree<T> {
   factory Quadtree(
     Rect quadrant, {
     int maxItems,
@@ -80,14 +79,7 @@ abstract class Quadtree<T> with EquatableMixin {
   set negativeDepth(int newNegativeDepth);
 
   @protected
-  void communicateNewNodeDepth(int newDepth) => depth = max(depth, newDepth);
-
-  @override
-  List<Object?> get props =>
-      [maxItems, maxDepth, getBounds, depth, negativeDepth];
-
-  @override
-  bool? get stringify => true;
+  void communicateNewNodeDepth(int newDepth);
 
   /// Insert the item into the node. If the node exceeds the capacity,
   /// it will split and add all items to their corresponding subnodes.
