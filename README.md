@@ -30,7 +30,7 @@ Add the package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  expandable_quadtree: ^0.0.1
+  expandable_quadtree: ^0.1.0
 ```
 
 and then run:
