@@ -1,14 +1,15 @@
 name: expandable_quadtree
-description: A Dart package for creating and interacting with a quadtree data structure.
-version: 0.0.1
-# repository: https://github.com/my_org/my_repo
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+description: A flexible and efficient **Quadtree** implementation for Flutter and Dart, perfect for spatial indexing, collision detection, and organizing large sets of 2D data. This package supports multiple quadtree configurations, including expandable, horizontally expandable, and vertically expandable quadtrees.
+version: 0.1.0
+repository: https://github.com/Jei-sKappa/expandable-quadtree-dart
+issue_tracker: https://github.com/Jei-sKappa/expandable-quadtree-dart/issues
+documentation: https://github.com/Jei-sKappa/expandable-quadtree-dart
+topics: [ data-structures, 2d, game ]
 
 environment:
   sdk: ^3.4.4
   flutter: ">=3.10.0"  
 
-# Add regular dependencies here.
 dependencies:
   flutter:
     sdk: flutter
