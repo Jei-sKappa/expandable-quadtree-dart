@@ -84,11 +84,13 @@ class _QuadtreeHomePageState extends State<QuadtreeHomePage> {
     x = x + qX;
     y = y + qY;
 
-    _createObjectsAndAddToQuadtree(
-      context: context,
-      quadtreeController: quadtreeController,
-      offset: Offset(x, y),
-    );
+    if (mounted) {
+      _createObjectsAndAddToQuadtree(
+        context: context,
+        quadtreeController: quadtreeController,
+        offset: Offset(x, y),
+      );
+    }
   }
 
   Future<List<String>> getJsonInChunks(
@@ -129,30 +131,32 @@ class _QuadtreeHomePageState extends State<QuadtreeHomePage> {
             onPressed: () async {
               final jsonChunks = await getJsonInChunks();
 
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: const Text('Quadtree as JSON'),
-                    content: SizedBox(
-                      width: double.maxFinite,
-                      height: 400.0,
-                      child: ListView.builder(
-                        itemCount: jsonChunks.length,
-                        itemBuilder: (context, index) {
-                          return Text(jsonChunks[index]);
-                        },
+              if (context.mounted) {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text('Quadtree as JSON'),
+                      content: SizedBox(
+                        width: double.maxFinite,
+                        height: 400.0,
+                        child: ListView.builder(
+                          itemCount: jsonChunks.length,
+                          itemBuilder: (context, index) {
+                            return Text(jsonChunks[index]);
+                          },
+                        ),
                       ),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Close'),
-                      ),
-                    ],
-                  );
-                },
-              );
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              }
             },
           ),
           Switch.adaptive(
@@ -326,17 +330,19 @@ class _ControlsState extends State<_Controls> {
                     y = _r.nextDouble() * ((qY - qH) * 16) + (qY - qH);
                   }
 
-                  _createObjectsAndAddToQuadtree(
-                    context: context,
-                    myObject: MyObject(
-                      id: _uuid.v4(),
-                      x: x,
-                      y: y,
-                      width: newObjWidth,
-                      height: newObjHeight,
-                    ),
-                    quadtreeController: widget.quadtreeController,
-                  );
+                  if (context.mounted) {
+                    _createObjectsAndAddToQuadtree(
+                      context: context,
+                      myObject: MyObject(
+                        id: _uuid.v4(),
+                        x: x,
+                        y: y,
+                        width: newObjWidth,
+                        height: newObjHeight,
+                      ),
+                      quadtreeController: widget.quadtreeController,
+                    );
+                  }
                 },
                 child: const Text(
                   'Add object far away from the quadrant bounds',
@@ -551,12 +557,14 @@ Future<void> _createObjectsAndAddToQuadtree({
   }
   final valid = await quadtreeController.insertAllObjects(objects);
   print('Added ${objects.length} objects');
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(
-        valid ? "Added $count objects" : "Failed to add $count objects",
+  if (context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          valid ? "Added $count objects" : "Failed to add $count objects",
+        ),
+        duration: const Duration(seconds: 2),
       ),
-      duration: const Duration(seconds: 2),
-    ),
-  );
+    );
+  }
 }
