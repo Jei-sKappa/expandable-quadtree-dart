@@ -526,7 +526,7 @@ Future<void> _createObjectsAndAddToQuadtree({
   required QuadtreeController quadtreeController,
   Offset? offset,
 }) async {
-  print('Adding $count objects');
+  debugPrint('Adding $count objects');
   final double qX = await quadtreeController.getX();
   final double qY = await quadtreeController.getY();
   final double qW = await quadtreeController.getWidth();
@@ -556,7 +556,7 @@ Future<void> _createObjectsAndAddToQuadtree({
     objects.add(obj);
   }
   final valid = await quadtreeController.insertAllObjects(objects);
-  print('Added ${objects.length} objects');
+  debugPrint('Added ${objects.length} objects');
   if (context.mounted) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

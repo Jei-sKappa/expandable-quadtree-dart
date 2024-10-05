@@ -99,7 +99,7 @@ class QuadtreePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final startTime = DateTime.now();
-    print('Repainting canvas $size at $startTime');
+    debugPrint('Repainting canvas $size at $startTime');
 
     // Scale the quadtree to the screen size, preserving aspect ratio
     final double scaleX = size.width / quadtree.width;
@@ -130,8 +130,8 @@ class QuadtreePainter extends CustomPainter {
 
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    print('  Repaint duration: ${duration.inMilliseconds} ms');
-    print('-_' * 75);
+    debugPrint('Repaint duration: ${duration.inMilliseconds} ms');
+    debugPrint('-' * 75);
   }
 
   void _drawMultipleRootsQuadtree(
