@@ -4,7 +4,7 @@ version: 0.1.0
 repository: https://github.com/Jei-sKappa/expandable-quadtree-dart
 issue_tracker: https://github.com/Jei-sKappa/expandable-quadtree-dart/issues
 documentation: https://github.com/Jei-sKappa/expandable-quadtree-dart
-topics: [ data-structures, 2d, game ]
+topics: [ data-structures, game, games ]
 
 environment:
   sdk: ^3.4.4
