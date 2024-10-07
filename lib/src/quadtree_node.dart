@@ -150,12 +150,17 @@ class QuadtreeNode<T> with EquatableMixin {
   ///
   /// If [item.getRectsLocations] is expensive, consider using [remove]
   void localizedRemove(T item) {
-    if (items.remove(item)) return;
+    if (isLeaf) {
+      items.remove(item);
+      return;
+    }
+
+    // Quadtree is not a leaf node
 
     final quadrantLocations = _calculateQuadrantLocations(item, quadrant);
 
-    for (int i = 0; i < quadrantLocations.length; i++) {
-      nodes[quadrantLocations[i]]!.localizedRemove(item);
+    for (final q in quadrantLocations) {
+      nodes[q]!.localizedRemove(item);
     }
   }
 
